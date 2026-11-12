@@ -9,9 +9,22 @@ def test_payload_increases_static_loading():
     assert high["load_cases"]["static"] >= low["load_cases"]["static"]
 
 def test_span_increases_beam_deflection():
-    short=calculate({**BASE,"x_hub":2},SIZES)
-    long=calculate({**BASE,"x_hub":6},SIZES)
+    short=calculate({**BASE,"x_hub":2,"support_pairs":2},SIZES)
+    long=calculate({**BASE,"x_hub":6,"support_pairs":2},SIZES)
     assert long["deflection_breakdown"]["x_beams"] > short["deflection_breakdown"]["x_beams"]
+
+def test_additional_supports_reduce_x_deflection_but_cost_more():
+    sparse=calculate({**BASE,"x_hub":15,"support_pairs":2},SIZES)
+    supported=calculate({**BASE,"x_hub":15,"support_pairs":4},SIZES)
+    assert supported["deflection_breakdown"]["x_beams"] < sparse["deflection_breakdown"]["x_beams"]
+    assert supported["metrics"]["total_cost"] > sparse["metrics"]["total_cost"]
+    assert supported["metrics"]["layout_flexibility"] < sparse["metrics"]["layout_flexibility"]
+
+def test_fifteen_metre_bridge_and_support_metrics():
+    result=calculate({**BASE,"x_hub":15,"support_pairs":4},SIZES)
+    assert result["requirements"]["x_hub"] == 15
+    assert result["metrics"]["support_pairs"] == 4
+    assert result["metrics"]["support_spacing"] <= 6
 
 def test_stiffer_size_reduces_own_contribution():
     small=calculate(BASE,{**SIZES,"y_beam":2})

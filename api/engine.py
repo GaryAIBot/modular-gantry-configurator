@@ -12,11 +12,11 @@ def module(group,size):
 
 CATALOG=[module(g,s) for g in GROUPS for s in range(1,5)]
 SCENARIOS=[
- {"id":"fast_handling","name":"Fast Handling","application":"handling","description":"High-throughput handling with no process load.","requirements":{"x_hub":4,"y_hub":2.2,"z_hub":1,"payload":20,"tool_mass":12,"max_speed":2.5,"max_acceleration":6,"force_x":0,"force_y":0,"force_z":0,"max_deflection":.35,"target_life":18000,"tool_offset":.35}},
- {"id":"precision_inspection","name":"Precision Inspection","application":"non_contact","description":"Position-stable non-contact inspection.","requirements":{"x_hub":3.2,"y_hub":1.8,"z_hub":.7,"payload":10,"tool_mass":8,"max_speed":1.2,"max_acceleration":2,"force_x":0,"force_y":0,"force_z":0,"max_deflection":.09,"target_life":24000,"tool_offset":.25}},
- {"id":"force_processing","name":"Force-Controlled Processing","application":"contact","description":"Contact process with a 1,000 N resultant load.","requirements":{"x_hub":4.5,"y_hub":2.5,"z_hub":1.1,"payload":40,"tool_mass":18,"max_speed":.8,"max_acceleration":1.5,"force_x":700,"force_y":300,"force_z":650,"max_deflection":.16,"target_life":30000,"tool_offset":.42}}
+ {"id":"fast_handling","name":"Fast Handling","application":"handling","description":"High-throughput handling with no process load.","requirements":{"x_hub":4,"y_hub":2.2,"z_hub":1,"support_pairs":2,"payload":20,"tool_mass":12,"max_speed":2.5,"max_acceleration":6,"force_x":0,"force_y":0,"force_z":0,"max_deflection":.35,"target_life":18000,"tool_offset":.35}},
+ {"id":"precision_inspection","name":"Precision Inspection","application":"non_contact","description":"Position-stable non-contact inspection.","requirements":{"x_hub":3.2,"y_hub":1.8,"z_hub":.7,"support_pairs":2,"payload":10,"tool_mass":8,"max_speed":1.2,"max_acceleration":2,"force_x":0,"force_y":0,"force_z":0,"max_deflection":.09,"target_life":24000,"tool_offset":.25}},
+ {"id":"force_processing","name":"Force-Controlled Processing","application":"contact","description":"Contact process with a 1,000 N resultant load.","requirements":{"x_hub":4.5,"y_hub":2.5,"z_hub":1.1,"support_pairs":2,"payload":40,"tool_mass":18,"max_speed":.8,"max_acceleration":1.5,"force_x":700,"force_y":300,"force_z":650,"max_deflection":.16,"target_life":30000,"tool_offset":.42}}
 ]
-BOUNDS={"x_hub":(.8,8),"y_hub":(.5,5),"z_hub":(.2,2.5),"payload":(1,250),"tool_mass":(1,120),"max_speed":(.1,5),"max_acceleration":(.1,12),"force_x":(0,5000),"force_y":(0,5000),"force_z":(0,5000),"max_deflection":(.03,2),"target_life":(1000,80000),"tool_offset":(.05,1.2)}
+BOUNDS={"x_hub":(.8,15),"y_hub":(.5,5),"z_hub":(.2,2.5),"support_pairs":(2,8),"payload":(1,250),"tool_mass":(1,120),"max_speed":(.1,5),"max_acceleration":(.1,12),"force_x":(0,5000),"force_y":(0,5000),"force_z":(0,5000),"max_deflection":(.03,2),"target_life":(1000,80000),"tool_offset":(.05,1.2)}
 
 def normalize(raw):
     d=SCENARIOS[0]["requirements"]; out={}
@@ -24,6 +24,7 @@ def normalize(raw):
         try:v=float(raw.get(k,d[k]))
         except (ValueError,TypeError):v=float(d[k])
         out[k]=min(hi,max(lo,v))
+        if k=="support_pairs":out[k]=int(round(out[k]))
     return out
 
 def compatibility(s):
@@ -33,10 +34,13 @@ def compatibility(s):
 
 def calculate(requirements,sizes=None):
     r=normalize(requirements); s={g:max(1,min(4,int((sizes or {}).get(g,2)))) for g in GROUPS}; mods={g:module(g,s[g]) for g in GROUPS}
-    length={g:{"columns":1.15+r["z_hub"],"x_beams":r["x_hub"]+.7,"y_beam":r["y_hub"]+.6,"z_axis":r["z_hub"]+.35,"x_guides":r["x_hub"]+.45,"y_guides":r["y_hub"]+.35,"z_guides":r["z_hub"]+.2}.get(g,.38) for g in GROUPS}
-    qty={g:(4 if g=="columns" else 2 if g in {"x_beams","x_carriages","x_guides","x_drives"} else 1) for g in GROUPS}
+    rail_length=r["x_hub"]+.7; support_pairs=int(r["support_pairs"]); support_span=rail_length/(support_pairs-1)
+    length={g:{"columns":1.15+r["z_hub"],"x_beams":rail_length,"y_beam":r["y_hub"]+.6,"z_axis":r["z_hub"]+.35,"x_guides":r["x_hub"]+.45,"y_guides":r["y_hub"]+.35,"z_guides":r["z_hub"]+.2}.get(g,.38) for g in GROUPS}
+    qty={g:(2*support_pairs if g=="columns" else 2 if g in {"x_beams","x_carriages","x_guides","x_drives"} else 1) for g in GROUPS}
     masses={g:mods[g]["mass_per_m"]*length[g]*qty[g] for g in GROUPS}
-    zm=r["payload"]+r["tool_mass"]+sum(masses[g] for g in ["z_axis","z_carriage","z_guides","z_drive"]); ym=zm+sum(masses[g] for g in ["y_beam","y_carriage","y_guides","y_drive"]); xm=ym+sum(masses[g] for g in ["x_carriages","x_drives"])
+    zm=r["payload"]+r["tool_mass"]+sum(masses[g] for g in ["z_axis","z_carriage","z_guides","z_drive"])
+    ym=zm+masses["y_carriage"]
+    xm=zm+sum(masses[g] for g in ["y_beam","y_carriage","y_guides","y_drive","x_carriages"])
     grav=9.81; proc=math.sqrt(r["force_x"]**2+r["force_y"]**2+r["force_z"]**2); sf=1.25
     forces={"x":sf*(xm*r["max_acceleration"]+r["force_x"]+.035*xm*grav),"y":sf*(ym*r["max_acceleration"]+r["force_y"]+.035*ym*grav),"z":sf*(zm*(grav+r["max_acceleration"])+r["force_z"])}
     load=max(max(forces.values()),sf*(zm*grav+proc)); moment=load*(r["tool_offset"]+.25*r["z_hub"])
@@ -44,7 +48,7 @@ def calculate(requirements,sizes=None):
     weights={"columns":.75,"x_beams":1.16,"y_beam":1.32,"z_axis":1.12,"x_carriages":.48,"y_carriage":.54,"z_carriage":.5,"x_guides":.72,"y_guides":.78,"z_guides":.66,"x_drives":.3,"y_drive":.34,"z_drive":.27}
     defl={}
     for group in GROUPS:
-        span=length[group] if KINDS[group] in {"beam","structure"} else 1.44
+        span=(support_span if group in {"x_beams","columns"} else length[group]) if KINDS[group] in {"beam","structure"} else 1.44
         sfactor=(span/2)**3 if KINDS[group] in {"beam","structure"} else 1
         local=cload*weights[group]+moment*(85 if KINDS[group] in {"guide","plate"} else 35)
         # Calibrated compliance surrogate: keeps output in a plausible POC millimetre range.
@@ -55,13 +59,14 @@ def calculate(requirements,sizes=None):
         m=mods[group]; rel=forces.get(axes.get(group),load*weights[group]); ratios={"load":rel/m["force_capacity"],"moment":moment*weights[group]/m["moment_capacity"],"dynamic":rel*(1+.16*r["max_speed"])/m["dynamic_capacity"],"life":(r["target_life"]/m["life_rating"])*max(.25,rel/m["force_capacity"])**2.4,"stiffness_budget":defl[group]/max(r["max_deflection"]*.60,.001)}
         key=max(ratios,key=ratios.get); util=max(ratios.values())*100; maxu=max(maxu,util); cost=m["cost"]*qty[group]*(length[group] if KINDS[group] in {"beam","structure","guide"} else 1)
         comps.append({"id":group,"module_id":m["id"],"label":LABELS[group],"size":s[group],"mass":round(masses[group],2),"cost":round(cost,1),"utilization":round(util,1),"critical_criterion":key,"criteria":{k:round(v*100,1) for k,v in ratios.items()},"reserve":round(100-util,1),"deflection":round(defl[group],5),"section_mm":m["section_mm"]})
-    ok,cissues=compatibility(s); issues=list(cissues); minsize=1+int(r["x_hub"]>4.2)+int(r["x_hub"]>6.2)
-    if s["x_beams"]<minsize:issues.append(f"X beam BG{s['x_beams']} does not support the {r['x_hub']:.1f} m span envelope.")
+    ok,cissues=compatibility(s); issues=list(cissues); minsize=min(4,1+int(support_span>4.2)+int(support_span>6.2))
+    if s["x_beams"]<minsize:issues.append(f"X beam BG{s['x_beams']} does not support the {support_span:.1f} m distance between support pairs.")
     if maxu>100:issues.append(f"Peak component utilization is {maxu:.1f}%.")
     if total>r["max_deflection"]:issues.append(f"TCP deflection {total:.3f} mm exceeds {r['max_deflection']:.3f} mm.")
     valid=ok and s["x_beams"]>=minsize and maxu<=100 and total<=r["max_deflection"]
     eff=1/sum(1/mods[g]["stiffness"] for g in GROUPS); freq=(1/(2*math.pi))*math.sqrt(eff/max(xm,1)); canonical=json.dumps({"r":r,"s":s},sort_keys=True)
-    return {"configuration_id":"CFG-"+hashlib.sha1(canonical.encode()).hexdigest()[:8].upper(),"requirements":r,"sizes":s,"modules":comps,"metrics":{"total_cost":round(sum(c["cost"] for c in comps),1),"total_mass":round(sum(masses.values())+r["payload"]+r["tool_mass"],1),"moving_masses":{"x":round(xm,1),"y":round(ym,1),"z":round(zm,1)},"axis_forces":{k:round(v,1) for k,v in forces.items()},"tcp_deflection":round(total,5),"allowed_deflection":r["max_deflection"],"max_utilization":round(maxu,1),"natural_frequency":round(freq,1),"critical_load_case":critical,"status":"valid" if valid else "invalid"},"deflection_breakdown":{k:round(v,5) for k,v in defl.items()},"load_cases":{k:round(v,1) for k,v in cases.items()},"violations":issues,"warnings":["Synthetic module data — demonstration only."],"valid":valid}
+    flexibility=max(20,round(100-(support_pairs-2)*15))
+    return {"configuration_id":"CFG-"+hashlib.sha1(canonical.encode()).hexdigest()[:8].upper(),"requirements":r,"sizes":s,"modules":comps,"metrics":{"total_cost":round(sum(c["cost"] for c in comps),1),"total_mass":round(sum(masses.values())+r["payload"]+r["tool_mass"],1),"moving_masses":{"x":round(xm,1),"y":round(ym,1),"z":round(zm,1)},"axis_forces":{k:round(v,1) for k,v in forces.items()},"tcp_deflection":round(total,5),"allowed_deflection":r["max_deflection"],"max_utilization":round(maxu,1),"natural_frequency":round(freq,1),"critical_load_case":critical,"support_pairs":support_pairs,"support_spacing":round(support_span,2),"layout_flexibility":flexibility,"status":"valid" if valid else "invalid"},"deflection_breakdown":{k:round(v,5) for k,v in defl.items()},"load_cases":{k:round(v,1) for k,v in cases.items()},"violations":issues,"warnings":["Synthetic module data — demonstration only."],"valid":valid}
 
 def optimize(requirements,strategy="minimum_cost"):
     # Deterministic coordinate search followed by a cheapest-valid downsizing pass.
