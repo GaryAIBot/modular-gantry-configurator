@@ -1,4 +1,4 @@
-# GantryLab — Modular Gantry Configurator POC
+# Güdel Gantry Lab — Modular Gantry Configurator POC
 
 A full-stack, physics-motivated XYZ gantry configurator. It combines 12 module groups, deterministic load/deflection calculations, three optimization strategies, an interactive Three.js model, engineering charts, manual overrides, JSON export/import, and an optional OpenAI assistant.
 
@@ -22,4 +22,3 @@ pytest -q
 ```
 
 The application remains fully functional without `OPENAI_API_KEY`; the chat then uses a deterministic local configuration assistant.
-
