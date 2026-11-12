@@ -1,4 +1,5 @@
 from api.engine import GROUPS, SCENARIOS, calculate, compatibility, optimize
+from api.index import ChatRequest, local_assistant
 
 BASE=SCENARIOS[0]["requirements"]
 SIZES={g:3 for g in GROUPS}
@@ -71,3 +72,18 @@ def test_optimizer_returns_compatible_configuration():
         result=optimize(scenario["requirements"],"minimum_cost")
         ok,_=compatibility(result["sizes"])
         assert ok
+
+def test_chat_module_change_is_proposed_not_applied():
+    body=ChatRequest(message="Change the Y beam to BG4",requirements=BASE,sizes=SIZES)
+    reply=local_assistant(body)
+    assert reply["requires_confirmation"]
+    assert reply["proposed_size_changes"] == {"y_beam":4}
+    assert body.sizes["y_beam"] == 3
+    assert reply["result"]["sizes"]["y_beam"] == 4
+
+def test_chat_cost_reduction_returns_confirmable_configuration():
+    body=ChatRequest(message="Can we reduce cost?",requirements=BASE,sizes={g:4 for g in GROUPS})
+    reply=local_assistant(body)
+    assert reply["requires_confirmation"]
+    assert reply["proposed_size_changes"]
+    assert set(reply["proposed_size_changes"]).issubset(GROUPS)
