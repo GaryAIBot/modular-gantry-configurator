@@ -27,6 +27,19 @@ def test_fifteen_metre_bridge_and_support_metrics():
     assert result["metrics"]["support_pairs"] == 4
     assert result["metrics"]["support_spacing"] <= 6
 
+def test_new_travel_payload_ranges_and_chf_price():
+    result=calculate({**BASE,"x_hub":30,"y_hub":15,"z_hub":4,"payload":3000,"support_pairs":6},{g:4 for g in GROUPS})
+    assert result["requirements"] | {"x_hub":30,"y_hub":15,"z_hub":4,"payload":3000} == result["requirements"]
+    assert 15000 <= result["metrics"]["total_cost"] <= 400000
+
+def test_strokes_round_and_out_of_range_values_report_adjustment():
+    result=calculate({**BASE,"x_hub":35.4,"y_hub":7.6,"z_hub":0.2,"payload":5000},SIZES)
+    assert result["requirements"]["x_hub"] == 30
+    assert result["requirements"]["y_hub"] == 8
+    assert result["requirements"]["z_hub"] == 1
+    assert result["requirements"]["payload"] == 3000
+    assert {a["field"] for a in result["adjustments"]} >= {"x_hub","y_hub","z_hub","payload"}
+
 def test_stiffer_size_reduces_own_contribution():
     small=calculate(BASE,{**SIZES,"y_beam":2})
     large=calculate(BASE,{**SIZES,"y_beam":4})

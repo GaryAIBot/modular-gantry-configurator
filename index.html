@@ -1,98 +1,1768 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Güdel Gantry Lab — Modular Gantry Configurator</title>
-<meta name="description" content="Physics-motivated modular XYZ gantry configurator proof of concept.">
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
-<style>
-:root{--ink:#15202d;--muted:#637080;--blue:#2463eb;--blue2:#0f49c8;--line:#dce3eb;--paper:#f3f6f9;--panel:#fff;--green:#17875f;--yellow:#d5a11e;--orange:#eb751b;--red:#d64242}
-*{box-sizing:border-box}body{margin:0;font:13px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink);background:var(--paper);overflow:hidden}button,input,select{font:inherit}button{cursor:pointer}.app{height:100vh;display:grid;grid-template-rows:58px 1fr}.topbar{height:58px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 20px;z-index:20}.brand{font-size:17px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}.brandmark{width:26px;height:26px;border:5px solid var(--blue);border-top-color:#91b1ff;transform:rotate(45deg)}.poc{color:var(--muted);font-size:11px;border-left:1px solid var(--line);padding-left:14px;margin-left:14px}.top-actions{margin-left:auto;display:flex;align-items:center;gap:8px}.btn{border:1px solid #cdd7e3;background:#fff;border-radius:6px;padding:8px 12px;color:#344256;font-weight:600}.btn:hover{background:#f5f7fa}.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.btn.primary:hover{background:var(--blue2)}.workspace{min-height:0;display:grid;grid-template-columns:minmax(270px,25%) minmax(470px,45%) minmax(330px,30%)}.col{min-width:0;min-height:0;background:#fff;border-right:1px solid var(--line);overflow:auto}.left,.right{padding:18px}.center{position:relative;display:flex;flex-direction:column;background:#edf1f5;overflow:hidden}.section-title{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:#778494;font-weight:800;margin-bottom:10px}.scenario-grid{display:grid;gap:7px}.scenario{border:1px solid var(--line);border-radius:7px;padding:10px 11px;background:#fff;text-align:left}.scenario b{display:block}.scenario span{font-size:11px;color:var(--muted)}.scenario.active{border-color:var(--blue);box-shadow:0 0 0 2px #2463eb18;background:#f8faff}.block{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field label{display:flex;justify-content:space-between;font-size:11px;color:#596779;margin:0 0 5px}.control{position:relative}.control input,.control select{width:100%;height:36px;border:1px solid #cfd9e4;border-radius:5px;padding:0 36px 0 9px;background:#fff;outline:0}.control input:focus,.control select:focus{border-color:var(--blue);box-shadow:0 0 0 2px #2463eb18}.unit{position:absolute;right:9px;top:10px;font-size:10px;color:#8995a3;pointer-events:none}.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #cfd9e4;border-radius:6px;overflow:hidden}.seg button{border:0;border-right:1px solid #cfd9e4;background:#fff;padding:8px 3px;font-size:11px}.seg button:last-child{border:0}.seg button.active{background:#eaf1ff;color:#1249b9;font-weight:700}.module-list{display:grid;gap:5px}.module-row{display:grid;grid-template-columns:1fr 70px;align-items:center;border:1px solid var(--line);border-radius:5px;padding:6px 7px}.module-row span{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.module-row select{height:28px;border:1px solid #cad5e0;border-radius:4px;background:#fff}.module-row.selected{border-color:var(--blue);background:#f6f9ff}.notice{font-size:10px;color:#68778a;background:#eef2f6;border-radius:5px;padding:9px;margin-top:12px}.viewer-head{height:64px;background:#fff;border-bottom:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;z-index:2}.viewer-head h1{font-size:16px;margin:0}.viewer-head p{margin:2px 0 0;color:var(--muted);font-size:11px}.view-toggle{margin-left:auto;display:flex;background:#edf1f5;padding:3px;border-radius:6px}.view-toggle button{border:0;background:transparent;padding:6px 9px;font-size:10px;border-radius:4px}.view-toggle button.active{background:#fff;box-shadow:0 1px 3px #0002}.stage{position:relative;flex:1;min-height:300px}.stage canvas{display:block}.stage-overlay{position:absolute;inset:0;pointer-events:none}.legend{position:absolute;left:15px;bottom:15px;background:#ffffffde;border:1px solid var(--line);border-radius:6px;padding:9px 11px;backdrop-filter:blur(6px);font-size:10px}.legend-scale{display:flex;gap:10px;margin-top:5px}.legend-scale i{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}.position{position:absolute;right:15px;bottom:15px;pointer-events:auto;background:#ffffffde;border:1px solid var(--line);padding:9px;border-radius:6px}.position button{border:1px solid #cbd6e0;background:white;padding:6px 8px;font-size:10px}.position button.active{background:#e9f0ff;color:#174dbb}.selected-card{position:absolute;left:15px;top:15px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--blue);padding:10px 12px;width:205px;box-shadow:0 8px 24px #15202d17}.selected-card b{font-size:12px}.selected-card div{color:var(--muted);font-size:10px;margin-top:3px}.center-foot{height:116px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:12px 14px;gap:8px}.mini-kpi{border-right:1px solid var(--line);padding:4px 8px}.mini-kpi:last-child{border:0}.mini-kpi span{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.05em}.mini-kpi b{font-size:18px;display:block;margin-top:3px}.mini-kpi small{font-size:9px;color:var(--muted)}.status-valid{color:var(--green)}.status-invalid{color:var(--red)}.right{padding-bottom:80px}.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.kpi{border:1px solid var(--line);border-radius:6px;padding:10px}.kpi span{font-size:9px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em}.kpi b{font-size:17px;display:block;margin-top:2px}.status-box{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between}.status-pill{padding:4px 8px;border-radius:20px;font-size:10px;font-weight:800}.valid{background:#e3f6ee;color:#117451}.invalid{background:#fdeaea;color:#b52d2d}.tabs{display:flex;border-bottom:1px solid var(--line);margin-top:16px}.tabs button{border:0;background:transparent;padding:8px 7px;font-size:10px;color:#647286;border-bottom:2px solid transparent}.tabs button.active{color:var(--blue);border-color:var(--blue);font-weight:700}.chart{height:220px;width:100%}.component-detail{border:1px solid var(--line);border-radius:6px;margin-top:10px;padding:11px}.detail-head{display:flex;justify-content:space-between}.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.detail-grid div{background:#f3f6f9;padding:7px;border-radius:4px}.detail-grid span{display:block;font-size:9px;color:var(--muted)}.alternatives{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px}.alt{border:1px solid var(--line);border-radius:6px;padding:8px;text-align:left;background:#fff}.alt b{display:block;font-size:10px}.alt span{display:block;color:var(--muted);font-size:9px;margin-top:3px}.alt.active{border-color:var(--blue);background:#f7f9ff}.violations{background:#fff2f2;color:#a92b2b;padding:9px;border-radius:6px;margin-top:10px;font-size:10px}.chat-launch{position:fixed;right:18px;bottom:18px;z-index:30;border:0;border-radius:25px;background:var(--blue);color:#fff;padding:12px 17px;font-weight:700;box-shadow:0 8px 30px #174dbb55}.chat{position:fixed;right:14px;bottom:14px;width:370px;height:560px;max-height:calc(100vh - 28px);background:#fff;border:1px solid var(--line);border-radius:10px;z-index:40;box-shadow:0 20px 70px #14203333;display:none;grid-template-rows:auto 1fr auto}.chat.open{display:grid}.chat-head{padding:14px;border-bottom:1px solid var(--line);display:flex}.chat-head b{display:block}.chat-head span{color:var(--muted);font-size:10px}.chat-head button{margin-left:auto;border:0;background:transparent;font-size:20px}.messages{padding:12px;overflow:auto}.msg{padding:9px 11px;border-radius:8px;margin:7px 0;max-width:88%;font-size:11px}.msg.bot{background:#eef3f8}.msg.user{background:#1d2938;color:#fff;margin-left:auto}.proposal{border:1px solid #a8c2fa;background:#f5f8ff;padding:9px;border-radius:6px;margin:8px 0}.proposal button{border:0;background:var(--blue);color:#fff;padding:6px 9px;border-radius:4px;margin-top:6px}.quick{padding:0 10px 8px;display:flex;gap:5px;flex-wrap:wrap}.quick button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:5px 8px;font-size:9px}.chat-form{display:flex;border-top:1px solid var(--line);padding:10px}.chat-form input{flex:1;border:0;outline:0}.chat-form button{border:0;background:var(--blue);color:#fff;width:34px;height:34px;border-radius:5px}.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,70px);background:#162334;color:#fff;padding:10px 14px;border-radius:6px;z-index:60;transition:.2s}.toast.show{transform:translate(-50%,0)}.loading:after{content:"";position:fixed;inset:58px 0 0;background:#ffffff88;z-index:50;backdrop-filter:blur(1px)}.loading:before{content:"Calculating configuration…";position:fixed;z-index:51;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;padding:14px 18px;border-radius:7px;box-shadow:0 8px 35px #0002;font-weight:700}
-@media(max-width:1050px){body{overflow:auto}.app{height:auto}.workspace{grid-template-columns:320px 1fr}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:18px}.center{min-height:700px}.col{overflow:visible}.chart{height:260px}}
-@media(max-width:760px){.workspace{display:block}.topbar .poc,.top-actions .secondary{display:none}.left,.right{display:block}.center{min-height:640px}.center-foot{grid-template-columns:repeat(2,1fr);height:auto}.mini-kpi{border:0}.chat{width:calc(100% - 20px);right:10px}.field-grid{grid-template-columns:1fr 1fr}}
-:root{--ink:#282828;--muted:#6f7379;--blue:#990000;--blue2:#740000;--line:#dbdbdb;--paper:#f1f1f1;--panel:#fff;--red:#bf1128}
-.brand{color:#990000;font-weight:900;letter-spacing:.015em}.brandmark{border-color:#990000;border-top-color:#d8a3a3}
-.btn.primary,.chat-launch,.chat-form button,.proposal button{background:#990000;border-color:#990000}.btn.primary:hover{background:#740000}
-.scenario.active,.module-row.selected,.alt.active{background:#fff8f8;box-shadow:0 0 0 2px #99000014}
-.seg button.active,.position button.active{background:#f6eaea;color:#7b0000}
-.center{background:#ececec}.msg.user{background:#454d5a}.proposal{border-color:#d4a5a5;background:#fff8f8}.chat-launch{box-shadow:0 8px 30px #99000044}
-</style></head>
-<body><div class="app">
-<header class="topbar"><div class="brand"><i class="brandmark"></i> GÜDEL GANTRY LAB</div><div class="poc">MODULAR GANTRY CONFIGURATOR · POC 0.1</div><div class="top-actions"><button class="btn secondary" id="importBtn">Import</button><button class="btn secondary" id="exportBtn">Export JSON</button><input type="file" id="importFile" accept=".json" hidden><button class="btn primary" id="optimizeBtn">Optimize configuration</button></div></header>
-<main class="workspace">
-<aside class="col left">
-  <div class="section-title">Application scenario</div><div id="scenarios" class="scenario-grid"></div>
-  <div class="block"><div class="section-title">Requirements</div><div class="field-grid" id="fields"></div></div>
-  <div class="block"><div class="section-title">Optimization objective</div><div class="seg" id="strategy"><button data-v="minimum_cost" class="active">Min cost</button><button data-v="balanced">Balanced</button><button data-v="high_performance">Performance</button></div></div>
-  <div class="block"><div class="section-title">Manual module overrides</div><div id="modules" class="module-list"></div><div class="notice">Manual selections stay fixed until you explicitly optimize again. All technical values are synthetic demonstration data.</div></div>
-</aside>
-<section class="center">
- <div class="viewer-head"><div><h1 id="configTitle">XYZ Gantry Configuration</h1><p id="configMeta">Calculating…</p></div><div class="view-toggle" id="viewMode"><button data-v="module" class="active">Module size</button><button data-v="utilization">Utilization</button><button data-v="deflection">Deflection</button></div></div>
- <div class="stage" id="stage"><div class="stage-overlay"><div class="selected-card" id="selectedCard"></div><div class="legend"><b id="legendTitle">Building groups</b><div class="legend-scale" id="legendScale"><span><i style="background:#b9d5ff"></i>BG1</span><span><i style="background:#73a7ef"></i>BG2</span><span><i style="background:#2463b8"></i>BG3</span><span><i style="background:#103f7a"></i>BG4</span></div></div><div class="position"><button data-p="home">Home</button><button data-p="mid" class="active">Mid travel</button><button data-p="extended">Z extended</button></div></div></div>
- <div class="center-foot"><div class="mini-kpi"><span>Relative cost</span><b id="costKpi">—</b><small>cost units</small></div><div class="mini-kpi"><span>TCP deflection</span><b id="deflKpi">—</b><small id="deflAllowed">—</small></div><div class="mini-kpi"><span>Peak utilization</span><b id="utilKpi">—</b><small id="utilCritical">—</small></div><div class="mini-kpi"><span>Natural frequency</span><b id="freqKpi">—</b><small>first relevant mode</small></div><div class="mini-kpi"><span>Configuration</span><b id="statusKpi">—</b><small id="statusSub">—</small></div></div>
-</section>
-<aside class="col right">
- <div class="section-title">Engineering insights</div><div class="kpi-grid"><div class="kpi"><span>Total moving mass X</span><b id="massKpi">—</b></div><div class="kpi"><span>Critical load case</span><b id="caseKpi">—</b></div><div class="kpi status-box"><div><span>Technical status</span><b id="statusText">—</b></div><i id="statusPill" class="status-pill">—</i></div></div>
- <div id="violations"></div>
- <div class="tabs" id="tabs"><button data-v="util" class="active">Utilization</button><button data-v="defl">Deflection</button><button data-v="cost">Cost</button></div><div id="chart" class="chart"></div><div id="componentDetail" class="component-detail"></div>
- <div class="block"><div class="section-title">Strategy comparison</div><div id="alternatives" class="alternatives"><div class="alt">Run optimization<br><span>to compare alternatives</span></div></div></div>
-</aside></main></div>
-<button class="chat-launch" id="chatLaunch">Ask engineering assistant</button>
-<section class="chat" id="chat"><div class="chat-head"><div><b>Configuration assistant</b><span id="chatMode">Engine-grounded advice</span></div><button id="chatClose">×</button></div><div><div class="messages" id="messages"><div class="msg bot">I can update requirements, explain module choices, compare deflection contributors, and explore cost trade-offs. Any proposed requirement change needs your confirmation.</div></div><div class="quick"><button>Why this Y beam?</button><button>Explain deflection</button><button>Can we reduce cost?</button><button>Double the payload</button></div></div><form class="chat-form" id="chatForm"><input id="chatInput" placeholder="Describe a requirement or ask why…" autocomplete="off"><button>→</button></form></section>
-<div class="toast" id="toast"></div>
-<script>
-const GROUPS=["columns","x_beams","y_beam","z_axis","x_carriages","y_carriage","z_carriage","x_guides","y_guides","z_guides","x_drives","y_drive","z_drive"];
-const LABELS={columns:"Columns",x_beams:"X beams",y_beam:"Y beam",z_axis:"Z axis",x_carriages:"X carriage plates",y_carriage:"Y carriage plate",z_carriage:"Z carriage plate",x_guides:"X guide system",y_guides:"Y guide system",z_guides:"Z guide system",x_drives:"X drive system",y_drive:"Y drive system",z_drive:"Z drive system"};
-const FIELD_META={x_hub:["X bridge travel","m",.8,15,.1],y_hub:["Y carriage travel","m",.5,5,.1],z_hub:["Z travel","m",.2,2.5,.05],support_pairs:["Support leg pairs","pairs",2,8,1],payload:["Payload","kg",1,250,1],tool_mass:["Tool mass","kg",1,120,1],max_speed:["Max. speed","m/s",.1,5,.1],max_acceleration:["Max. acceleration","m/s²",.1,12,.1],force_x:["Process force X","N",0,5000,10],force_y:["Process force Y","N",0,5000,10],force_z:["Process force Z","N",0,5000,10],max_deflection:["Allowed TCP defl.","mm",.03,2,.01],target_life:["Target life","h",1000,80000,1000]};
-let state={requirements:{},sizes:Object.fromEntries(GROUPS.map(g=>[g,2])),strategy:"minimum_cost",result:null,alternatives:[],selected:"y_beam",view:"module",tab:"util",scenarios:[],position:"mid",history:[],autoSupports:true};
-const $=id=>document.getElementById(id), api=async(path,body)=>{const r=await fetch(path,body?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}:{});if(!r.ok)throw Error((await r.json()).detail||"API error");return r.json()};
-const toast=t=>{$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1800)};
-function defaultSupportPairs(x){return Math.min(8,Math.ceil(x/6)+1)}
-function buildFields(){ $("fields").innerHTML=Object.entries(FIELD_META).map(([k,m])=>`<div class="field"><label>${m[0]}${k==="support_pairs"?'<small title="Default: no more than 6 m between supports"> ≤6 m default</small>':""}</label><div class="control"><input data-field="${k}" type="number" min="${m[2]}" max="${m[3]}" step="${m[4]}"><span class="unit">${m[1]}</span></div></div>`).join("");document.querySelectorAll("[data-field]").forEach(el=>el.onchange=()=>{let k=el.dataset.field;state.requirements[k]=+el.value;if(k==="support_pairs")state.autoSupports=false;if(k==="x_hub"&&state.autoSupports)state.requirements.support_pairs=defaultSupportPairs(+el.value);syncFields();calculateNow()})}
-function syncFields(){document.querySelectorAll("[data-field]").forEach(el=>el.value=state.requirements[el.dataset.field]??"")}
-function buildModules(){ $("modules").innerHTML=GROUPS.map(g=>`<div class="module-row" data-row="${g}"><span>${LABELS[g]}</span><select data-module="${g}">${[1,2,3,4].map(n=>`<option value="${n}">BG${n}</option>`).join("")}</select></div>`).join("");document.querySelectorAll("[data-module]").forEach(el=>{el.value=state.sizes[el.dataset.module];el.onchange=()=>{state.sizes[el.dataset.module]=+el.value;state.selected=el.dataset.module;calculateNow()}})}
-function renderScenarios(){ $("scenarios").innerHTML=state.scenarios.map((s,i)=>`<button class="scenario ${i===0?"active":""}" data-scenario="${i}"><b>${s.name}</b><span>${s.description}</span></button>`).join("");document.querySelectorAll("[data-scenario]").forEach(b=>b.onclick=()=>loadScenario(+b.dataset.scenario))}
-async function loadScenario(i){document.querySelectorAll("[data-scenario]").forEach((b,j)=>b.classList.toggle("active",i===j));state.requirements={...state.scenarios[i].requirements};state.autoSupports=true;state.requirements.support_pairs=defaultSupportPairs(state.requirements.x_hub);state.sizes=Object.fromEntries(GROUPS.map(g=>[g,2]));syncFields();buildModules();await optimizeNow();toast(state.scenarios[i].name+" loaded")}
-async function calculateNow(){setLoading(true);try{state.result=await api("/api/calculate",{requirements:state.requirements,sizes:state.sizes});renderAll()}catch(e){toast(e.message)}finally{setLoading(false)}}
-async function optimizeNow(){setLoading(true);try{state.result=await api("/api/optimize",{requirements:state.requirements,strategy:state.strategy});state.sizes={...state.result.sizes};buildModules();const c=await api("/api/compare",{requirements:state.requirements,sizes:state.sizes});state.alternatives=c.alternatives;renderAll();toast("Heuristic optimization complete")}catch(e){toast(e.message)}finally{setLoading(false)}}
-function setLoading(v){document.body.classList.toggle("loading",v)}
-function colorFor(comp){if(state.view==="module")return ["#b9d5ff","#73a7ef","#2463b8","#103f7a"][comp.size-1];if(state.view==="utilization"){let u=comp.utilization;return u>100?"#d64242":u>80?"#eb751b":u>60?"#d5a11e":"#24a574"}let max=Math.max(...state.result.modules.map(x=>x.deflection));let t=comp.deflection/max;return new THREE.Color().setHSL(.59,.75,.76-t*.42).getStyle()}
-function renderAll(){if(!state.result)return;let r=state.result,m=r.metrics;syncFields();document.querySelectorAll("[data-module]").forEach(el=>el.value=state.sizes[el.dataset.module]);document.querySelectorAll("[data-row]").forEach(el=>el.classList.toggle("selected",el.dataset.row===state.selected));
- $("configMeta").textContent=`${r.configuration_id} · ${r.optimization?"heuristic "+r.optimization.strategy.replaceAll("_"," "):"manual configuration"} · synthetic data`;
- $("costKpi").textContent=m.total_cost.toFixed(0);$("deflKpi").textContent=m.tcp_deflection.toFixed(3)+" mm";$("deflAllowed").textContent=`allowed ${m.allowed_deflection.toFixed(3)} mm`;$("utilKpi").textContent=m.max_utilization.toFixed(0)+"%";let worst=[...r.modules].sort((a,b)=>b.utilization-a.utilization)[0];$("utilCritical").textContent=worst.label;$("freqKpi").textContent=m.natural_frequency.toFixed(1)+" Hz";$("statusKpi").textContent=m.status.toUpperCase();$("statusKpi").className=m.status==="valid"?"status-valid":"status-invalid";$("statusSub").textContent=r.configuration_id;
- $("massKpi").textContent=m.moving_masses.x.toFixed(0)+" kg";$("caseKpi").textContent=m.critical_load_case[0].toUpperCase()+m.critical_load_case.slice(1);$("statusText").textContent=m.status==="valid"?"All constraints satisfied":"Constraints violated";$("statusPill").textContent=m.status.toUpperCase();$("statusPill").className="status-pill "+m.status;$("violations").innerHTML=(r.violations.length?`<div class="violations"><b>Needs attention</b><br>${r.violations.slice(0,3).join("<br>")}</div>`:"")+`<div class="notice"><b>${m.support_pairs} support pairs · ${m.support_spacing.toFixed(1)} m spacing</b><br>Layout flexibility ${m.layout_flexibility}% — fewer supports keep the cell more open; more supports reduce X-beam deflection.</div>`;
- renderSelected();renderChart();renderAlternatives();update3D();updateLegend()}
-function renderSelected(){let c=state.result.modules.find(x=>x.id===state.selected)||state.result.modules[0];$("selectedCard").innerHTML=`<b>${c.label} · BG${c.size}</b><div>${c.utilization.toFixed(0)}% utilization · ${c.deflection.toFixed(3)} mm TCP contribution</div>`;$("componentDetail").innerHTML=`<div class="detail-head"><b>${c.label}</b><span>${c.module_id}</span></div><div class="detail-grid"><div><span>Governing criterion</span><b>${c.critical_criterion.replaceAll("_"," ")}</b></div><div><span>Technical reserve</span><b>${(100-c.utilization).toFixed(0)}%</b></div><div><span>Cost contribution</span><b>${c.cost.toFixed(1)}</b></div><div><span>TCP contribution</span><b>${c.deflection.toFixed(3)} mm</b></div></div>`}
-let chart=echarts.init($("chart"));
-function renderChart(){let r=state.result;if(!r)return;chart.clear();if(state.tab==="util"){let data=[...r.modules].sort((a,b)=>b.utilization-a.utilization);chart.setOption({grid:{left:105,right:18,top:12,bottom:20},xAxis:{type:"value",max:v=>Math.max(110,Math.ceil(v.max/20)*20),axisLabel:{fontSize:9}},yAxis:{type:"category",inverse:true,data:data.map(x=>x.label),axisLabel:{fontSize:9}},series:[{type:"bar",data:data.map(x=>({value:+x.utilization.toFixed(1),itemStyle:{color:x.utilization>100?"#d64242":x.utilization>80?"#eb751b":x.utilization>60?"#d5a11e":"#24a574"}})),barWidth:9,label:{show:true,position:"right",formatter:"{c}%",fontSize:8}}],tooltip:{trigger:"axis"}})}else{let data=r.modules;if(state.tab==="defl")chart.setOption({tooltip:{trigger:"item"},series:[{type:"pie",radius:["42%","72%"],data:data.map(x=>({name:x.label,value:x.deflection})),label:{fontSize:8,formatter:"{b}\n{d}%"}}]});else chart.setOption({tooltip:{trigger:"item"},series:[{type:"pie",radius:["42%","72%"],data:data.map(x=>({name:x.label,value:x.cost})),label:{fontSize:8,formatter:"{b}\n{d}%"}}]})}}
-function renderAlternatives(){$("alternatives").innerHTML=state.alternatives.length?state.alternatives.map((a,i)=>`<button class="alt ${a.optimization.strategy===state.strategy?"active":""}" data-alt="${i}"><b>${a.optimization.strategy.replaceAll("_"," ")}</b><span>${a.metrics.total_cost.toFixed(0)} cost · ${a.metrics.tcp_deflection.toFixed(3)} mm</span><span>${a.metrics.max_utilization.toFixed(0)}% peak · ${a.metrics.total_mass.toFixed(0)} kg</span></button>`).join(""):`<div class="alt"><b>Optimize to compare</b></div>`;document.querySelectorAll("[data-alt]").forEach(b=>b.onclick=()=>{state.result=state.alternatives[+b.dataset.alt];state.strategy=state.result.optimization.strategy;state.sizes={...state.result.sizes};buildModules();renderAll()})}
-function updateLegend(){let titles={module:"Building groups",utilization:"Technical utilization",deflection:"TCP contribution"};$("legendTitle").textContent=titles[state.view];$("legendScale").innerHTML=state.view==="module"?'<span><i style="background:#b9d5ff"></i>BG1</span><span><i style="background:#73a7ef"></i>BG2</span><span><i style="background:#2463b8"></i>BG3</span><span><i style="background:#103f7a"></i>BG4</span>':state.view==="utilization"?'<span><i style="background:#24a574"></i>0–60%</span><span><i style="background:#d5a11e"></i>60–80%</span><span><i style="background:#eb751b"></i>80–100%</span><span><i style="background:#d64242"></i>>100%</span>':'<span><i style="background:#9fc7ff"></i>Low</span><span><i style="background:#123f7d"></i>High</span>'}
-let scene,camera,renderer,controls={drag:false,x:0,y:0,rx:-.34,ry:.62},objects={};
-function init3D(){let el=$("stage");scene=new THREE.Scene();scene.background=new THREE.Color("#edf1f5");camera=new THREE.PerspectiveCamera(38,el.clientWidth/el.clientHeight,.1,100);camera.position.set(8,6,9);renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(el.clientWidth,el.clientHeight);renderer.shadowMap.enabled=true;el.prepend(renderer.domElement);scene.add(new THREE.HemisphereLight(0xffffff,0x647080,1.25));let dl=new THREE.DirectionalLight(0xffffff,.8);dl.position.set(3,8,5);dl.castShadow=true;scene.add(dl);let grid=new THREE.GridHelper(18,18,0xcbd5df,0xdfe5eb);scene.add(grid);let axes=new THREE.AxesHelper(1.2);axes.position.set(-4,0,-3);scene.add(axes);renderer.domElement.onpointerdown=e=>{controls.drag=true;controls.x=e.clientX;controls.y=e.clientY};renderer.domElement.onpointermove=e=>{if(!controls.drag)return;controls.ry+=(e.clientX-controls.x)*.006;controls.rx=Math.max(-1.1,Math.min(.2,controls.rx+(e.clientY-controls.y)*.006));controls.x=e.clientX;controls.y=e.clientY};window.onpointerup=()=>controls.drag=false;renderer.domElement.onwheel=e=>{camera.position.multiplyScalar(e.deltaY>0?1.08:.92)};renderer.domElement.onclick=pick;window.addEventListener("resize",resize3D);animate()}
-function box(name,size,pos,group){let geo=new THREE.BoxGeometry(...size),mat=new THREE.MeshStandardMaterial({color:0x4679df,roughness:.55,metalness:.18});let mesh=new THREE.Mesh(geo,mat);mesh.position.set(...pos);mesh.castShadow=mesh.receiveShadow=true;mesh.userData.group=group;scene.add(mesh);(objects[group]??=[]).push(mesh);return mesh}
-function update3D(){if(!state.result)return;Object.values(objects).flat().forEach(o=>scene.remove(o));objects={};let r=state.requirements,s=state.sizes,x=Math.min(10,3+r.x_hub*.48),z=Math.min(4,1.8+r.z_hub*.9),y=Math.min(4.5,2+r.y_hub*.65),sec=g=>.10+state.sizes[g]*.045;let xp=state.position==="home"?-x*.34:state.position==="mid"?0:x*.34,yp=state.position==="home"?-y*.30:state.position==="mid"?0:y*.30,zd=state.position==="extended"?-.65:0;
- for(let i=0;i<r.support_pairs;i++){let xx=-x/2+i*x/(r.support_pairs-1);for(let yy of [-y/2,y/2])box("column",[sec("columns"),z,sec("columns")],[xx,z/2,yy],"columns")}
- for(let yy of [-y/2,y/2])box("xbeam",[x+.35,sec("x_beams"),sec("x_beams")],[0,z,yy],"x_beams");
- box("ybeam",[sec("y_beam"),sec("y_beam"),y+.35],[xp,z+.12,0],"y_beam");box("z",[sec("z_axis"),z*.68,sec("z_axis")],[xp,z*.78+zd,yp],"z_axis");
- for(let yy of [-y/2,y/2]){box("xguide",[x+.1,.035,.07],[0,z+.11,yy],"x_guides");box("xdrive",[x+.08,.07,.07],[0,z-.11,yy+.12],"x_drives");box("xcar",[.35,.13,.36],[xp,z+.12,yy],"x_carriages")}
- box("yguide",[.06,.06,y+.08],[xp-.12,z+.22,0],"y_guides");box("ydrive",[.07,.07,y],[xp+.13,z+.22,0],"y_drive");box("ycar",[.38,.17,.38],[xp,z+.2,yp],"y_carriage");box("zguide",[.05,z*.6,.05],[xp-.12,z*.78+zd,yp],"z_guides");box("zdrive",[.06,z*.58,.06],[xp+.12,z*.78+zd,yp],"z_drive");box("zcar",[.34,.28,.22],[xp,z*.82+zd,yp],"z_carriage");
- let tcp=box("tcp",[.12,.12,.12],[xp,z*.41+zd,yp],"z_axis");tcp.material=new THREE.MeshStandardMaterial({color:0xe83c3c,emissive:0x681010});updateColors()}
-function updateColors(){if(!state.result)return;state.result.modules.forEach(c=>(objects[c.id]||[]).forEach(o=>{o.material.color.set(colorFor(c));o.material.emissive.set(c.id===state.selected?0x182b56:0x000000)}))}
-function pick(e){let rect=renderer.domElement.getBoundingClientRect(),mouse=new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),ray=new THREE.Raycaster();ray.setFromCamera(mouse,camera);let hit=ray.intersectObjects(Object.values(objects).flat())[0];if(hit){state.selected=hit.object.userData.group;renderAll()}}
-function animate(){requestAnimationFrame(animate);let radius=camera.position.length();camera.position.x=radius*Math.cos(controls.rx)*Math.sin(controls.ry);camera.position.y=radius*Math.sin(-controls.rx);camera.position.z=radius*Math.cos(controls.rx)*Math.cos(controls.ry);camera.lookAt(0,1.4,0);renderer.render(scene,camera)}
-function resize3D(){let el=$("stage");if(!renderer)return;camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix();renderer.setSize(el.clientWidth,el.clientHeight);chart.resize()}
-document.querySelectorAll("#strategy button").forEach(b=>b.onclick=()=>{state.strategy=b.dataset.v;document.querySelectorAll("#strategy button").forEach(x=>x.classList.toggle("active",x===b))});$("optimizeBtn").onclick=optimizeNow;
-document.querySelectorAll("#viewMode button").forEach(b=>b.onclick=()=>{state.view=b.dataset.v;document.querySelectorAll("#viewMode button").forEach(x=>x.classList.toggle("active",x===b));updateColors();updateLegend()});
-document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{state.tab=b.dataset.v;document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x===b));renderChart()});
-document.querySelectorAll(".position button").forEach(b=>b.onclick=()=>{state.position=b.dataset.p;document.querySelectorAll(".position button").forEach(x=>x.classList.toggle("active",x===b));update3D()});
-$("exportBtn").onclick=()=>{let blob=new Blob([JSON.stringify({requirements:state.requirements,sizes:state.sizes,strategy:state.strategy,result:state.result},null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=(state.result?.configuration_id||"gantry-config")+".json";a.click()};
-$("importBtn").onclick=()=>$("importFile").click();$("importFile").onchange=async e=>{try{let d=JSON.parse(await e.target.files[0].text());state.requirements=d.requirements;state.sizes=d.sizes;state.strategy=d.strategy||"minimum_cost";syncFields();buildModules();await calculateNow();toast("Configuration imported")}catch{toast("Invalid configuration file")}};
-$("chatLaunch").onclick=()=>{$("chat").classList.add("open");$("chatLaunch").style.display="none"};$("chatClose").onclick=()=>{$("chat").classList.remove("open");$("chatLaunch").style.display=""};
-function addMsg(text,type,reqProposal={},sizeProposal={}){let d=document.createElement("div");d.className="msg "+type;d.textContent=text;$("messages").appendChild(d);if(Object.keys(reqProposal).length||Object.keys(sizeProposal).length){let p=document.createElement("div");p.className="proposal";let reqLines=Object.entries(reqProposal).map(([k,v])=>`${FIELD_META[k]?.[0]||k}: ${v} ${FIELD_META[k]?.[1]||""}`),sizeLines=Object.entries(sizeProposal).map(([k,v])=>`${LABELS[k]||k}: BG${v}`);p.innerHTML="<b>Proposed configuration changes</b><br>"+[...reqLines,...sizeLines].join("<br>")+"<br><button>Confirm and apply</button>";p.querySelector("button").onclick=async()=>{Object.assign(state.requirements,reqProposal);Object.assign(state.sizes,sizeProposal);syncFields();buildModules();p.remove();await calculateNow();addMsg("Applied and recalculated.","bot")};$("messages").appendChild(p)}$("messages").scrollTop=$("messages").scrollHeight}
-async function sendChat(q){if(!q.trim())return;addMsg(q,"user");state.history.push({role:"user",content:q});$("chatInput").disabled=true;try{let d=await api("/api/chat",{message:q,requirements:state.requirements,sizes:state.sizes,result:state.result,history:state.history.slice(-8)});addMsg(d.message,"bot",d.proposed_changes,d.proposed_size_changes);state.history.push({role:"assistant",content:d.message});$("chatMode").textContent=d.mode==="openai"?"OpenAI · engine grounded":"Deterministic fallback · engine grounded"}catch(e){addMsg("The assistant is unavailable, but the configurator remains fully functional.","bot")}finally{$("chatInput").disabled=false;$("chatInput").focus()}}
-$("chatForm").onsubmit=e=>{e.preventDefault();let q=$("chatInput").value;$("chatInput").value="";sendChat(q)};document.querySelectorAll(".quick button").forEach(b=>b.onclick=()=>sendChat(b.textContent));
-async function init(){buildFields();buildModules();init3D();try{state.scenarios=await api("/api/scenarios");renderScenarios();await loadScenario(0)}catch(e){toast("Could not connect to the calculation engine")}}
-init();
-</script></body></html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Güdel Gantry Lab — Modular Gantry Configurator</title>
+    <meta
+      name="description"
+      content="Physics-motivated modular XYZ gantry configurator proof of concept."
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+    <style>
+      :root {
+        --ink: #15202d;
+        --muted: #637080;
+        --blue: #2463eb;
+        --blue2: #0f49c8;
+        --line: #dce3eb;
+        --paper: #f3f6f9;
+        --panel: #fff;
+        --green: #17875f;
+        --yellow: #d5a11e;
+        --orange: #eb751b;
+        --red: #d64242;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font:
+          13px/1.45 Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          sans-serif;
+        color: var(--ink);
+        background: var(--paper);
+        overflow: hidden;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      .app {
+        height: 100vh;
+        display: grid;
+        grid-template-rows: 58px 1fr;
+      }
+      .topbar {
+        height: 58px;
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        z-index: 20;
+      }
+      .brand {
+        font-size: 17px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .brandmark {
+        width: 26px;
+        height: 26px;
+        border: 5px solid var(--blue);
+        border-top-color: #91b1ff;
+        transform: rotate(45deg);
+      }
+      .poc {
+        color: var(--muted);
+        font-size: 11px;
+        border-left: 1px solid var(--line);
+        padding-left: 14px;
+        margin-left: 14px;
+      }
+      .top-actions {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn {
+        border: 1px solid #cdd7e3;
+        background: #fff;
+        border-radius: 6px;
+        padding: 8px 12px;
+        color: #344256;
+        font-weight: 600;
+      }
+      .btn:hover {
+        background: #f5f7fa;
+      }
+      .btn.primary {
+        background: var(--blue);
+        border-color: var(--blue);
+        color: #fff;
+      }
+      .btn.primary:hover {
+        background: var(--blue2);
+      }
+      .workspace {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(270px, 25%) minmax(470px, 45%) minmax(
+            330px,
+            30%
+          );
+      }
+      .col {
+        min-width: 0;
+        min-height: 0;
+        background: #fff;
+        border-right: 1px solid var(--line);
+        overflow: auto;
+      }
+      .left,
+      .right {
+        padding: 18px;
+      }
+      .center {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        background: #edf1f5;
+        overflow: hidden;
+      }
+      .section-title {
+        font-size: 11px;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+        color: #778494;
+        font-weight: 800;
+        margin-bottom: 10px;
+      }
+      .scenario-grid {
+        display: grid;
+        gap: 7px;
+      }
+      .scenario {
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 10px 11px;
+        background: #fff;
+        text-align: left;
+      }
+      .scenario b {
+        display: block;
+      }
+      .scenario span {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .scenario.active {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 2px #2463eb18;
+        background: #f8faff;
+      }
+      .block {
+        border-top: 1px solid var(--line);
+        margin-top: 16px;
+        padding-top: 16px;
+      }
+      .field-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .field label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        color: #596779;
+        margin: 0 0 5px;
+      }
+      .control {
+        position: relative;
+      }
+      .control input,
+      .control select {
+        width: 100%;
+        height: 36px;
+        border: 1px solid #cfd9e4;
+        border-radius: 5px;
+        padding: 0 36px 0 9px;
+        background: #fff;
+        outline: 0;
+      }
+      .control input:focus,
+      .control select:focus {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 2px #2463eb18;
+      }
+      .unit {
+        position: absolute;
+        right: 9px;
+        top: 10px;
+        font-size: 10px;
+        color: #8995a3;
+        pointer-events: none;
+      }
+      .seg {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        border: 1px solid #cfd9e4;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .seg button {
+        border: 0;
+        border-right: 1px solid #cfd9e4;
+        background: #fff;
+        padding: 8px 3px;
+        font-size: 11px;
+      }
+      .seg button:last-child {
+        border: 0;
+      }
+      .seg button.active {
+        background: #eaf1ff;
+        color: #1249b9;
+        font-weight: 700;
+      }
+      .module-list {
+        display: grid;
+        gap: 5px;
+      }
+      .module-row {
+        display: grid;
+        grid-template-columns: 1fr 70px;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        padding: 6px 7px;
+      }
+      .module-row span {
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .module-row select {
+        height: 28px;
+        border: 1px solid #cad5e0;
+        border-radius: 4px;
+        background: #fff;
+      }
+      .module-row.selected {
+        border-color: var(--blue);
+        background: #f6f9ff;
+      }
+      .notice {
+        font-size: 10px;
+        color: #68778a;
+        background: #eef2f6;
+        border-radius: 5px;
+        padding: 9px;
+        margin-top: 12px;
+      }
+      .viewer-head {
+        height: 64px;
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        z-index: 2;
+      }
+      .viewer-head h1 {
+        font-size: 16px;
+        margin: 0;
+      }
+      .viewer-head p {
+        margin: 2px 0 0;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .view-toggle {
+        margin-left: auto;
+        display: flex;
+        background: #edf1f5;
+        padding: 3px;
+        border-radius: 6px;
+      }
+      .view-toggle button {
+        border: 0;
+        background: transparent;
+        padding: 6px 9px;
+        font-size: 10px;
+        border-radius: 4px;
+      }
+      .view-toggle button.active {
+        background: #fff;
+        box-shadow: 0 1px 3px #0002;
+      }
+      .stage {
+        position: relative;
+        flex: 1;
+        min-height: 300px;
+      }
+      .stage canvas {
+        display: block;
+      }
+      .stage-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      .legend {
+        position: absolute;
+        left: 15px;
+        bottom: 15px;
+        background: #ffffffde;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 9px 11px;
+        backdrop-filter: blur(6px);
+        font-size: 10px;
+      }
+      .legend-scale {
+        display: flex;
+        gap: 10px;
+        margin-top: 5px;
+      }
+      .legend-scale i {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 4px;
+      }
+      .position {
+        position: absolute;
+        right: 15px;
+        bottom: 15px;
+        pointer-events: auto;
+        background: #ffffffde;
+        border: 1px solid var(--line);
+        padding: 9px;
+        border-radius: 6px;
+      }
+      .position button {
+        border: 1px solid #cbd6e0;
+        background: white;
+        padding: 6px 8px;
+        font-size: 10px;
+      }
+      .position button.active {
+        background: #e9f0ff;
+        color: #174dbb;
+      }
+      .selected-card {
+        position: absolute;
+        left: 15px;
+        top: 15px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--blue);
+        padding: 10px 12px;
+        width: 205px;
+        box-shadow: 0 8px 24px #15202d17;
+      }
+      .selected-card b {
+        font-size: 12px;
+      }
+      .selected-card div {
+        color: var(--muted);
+        font-size: 10px;
+        margin-top: 3px;
+      }
+      .center-foot {
+        height: 116px;
+        background: #fff;
+        border-top: 1px solid var(--line);
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        padding: 12px 14px;
+        gap: 8px;
+      }
+      .mini-kpi {
+        border-right: 1px solid var(--line);
+        padding: 4px 8px;
+      }
+      .mini-kpi:last-child {
+        border: 0;
+      }
+      .mini-kpi span {
+        display: block;
+        color: var(--muted);
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .mini-kpi b {
+        font-size: 18px;
+        display: block;
+        margin-top: 3px;
+      }
+      .mini-kpi small {
+        font-size: 9px;
+        color: var(--muted);
+      }
+      .status-valid {
+        color: var(--green);
+      }
+      .status-invalid {
+        color: var(--red);
+      }
+      .right {
+        padding-bottom: 80px;
+      }
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .kpi {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 10px;
+      }
+      .kpi span {
+        font-size: 9px;
+        text-transform: uppercase;
+        color: var(--muted);
+        letter-spacing: 0.06em;
+      }
+      .kpi b {
+        font-size: 17px;
+        display: block;
+        margin-top: 2px;
+      }
+      .status-box {
+        grid-column: 1/-1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .status-pill {
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 800;
+      }
+      .valid {
+        background: #e3f6ee;
+        color: #117451;
+      }
+      .invalid {
+        background: #fdeaea;
+        color: #b52d2d;
+      }
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid var(--line);
+        margin-top: 16px;
+      }
+      .tabs button {
+        border: 0;
+        background: transparent;
+        padding: 8px 7px;
+        font-size: 10px;
+        color: #647286;
+        border-bottom: 2px solid transparent;
+      }
+      .tabs button.active {
+        color: var(--blue);
+        border-color: var(--blue);
+        font-weight: 700;
+      }
+      .chart {
+        height: 220px;
+        width: 100%;
+      }
+      .component-detail {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        margin-top: 10px;
+        padding: 11px;
+      }
+      .detail-head {
+        display: flex;
+        justify-content: space-between;
+      }
+      .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .detail-grid div {
+        background: #f3f6f9;
+        padding: 7px;
+        border-radius: 4px;
+      }
+      .detail-grid span {
+        display: block;
+        font-size: 9px;
+        color: var(--muted);
+      }
+      .alternatives {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        margin-top: 9px;
+      }
+      .alt {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 8px;
+        text-align: left;
+        background: #fff;
+      }
+      .alt b {
+        display: block;
+        font-size: 10px;
+      }
+      .alt span {
+        display: block;
+        color: var(--muted);
+        font-size: 9px;
+        margin-top: 3px;
+      }
+      .alt.active {
+        border-color: var(--blue);
+        background: #f7f9ff;
+      }
+      .violations {
+        background: #fff2f2;
+        color: #a92b2b;
+        padding: 9px;
+        border-radius: 6px;
+        margin-top: 10px;
+        font-size: 10px;
+      }
+      .chat-launch {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 30;
+        border: 0;
+        border-radius: 25px;
+        background: var(--blue);
+        color: #fff;
+        padding: 12px 17px;
+        font-weight: 700;
+        box-shadow: 0 8px 30px #174dbb55;
+      }
+      .chat {
+        position: fixed;
+        right: 14px;
+        bottom: 14px;
+        width: 370px;
+        height: 560px;
+        max-height: calc(100vh - 28px);
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        z-index: 40;
+        box-shadow: 0 20px 70px #14203333;
+        display: none;
+        grid-template-rows: auto 1fr auto;
+      }
+      .chat.open {
+        display: grid;
+      }
+      .chat-head {
+        padding: 14px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+      }
+      .chat-head b {
+        display: block;
+      }
+      .chat-head span {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .chat-head button {
+        margin-left: auto;
+        border: 0;
+        background: transparent;
+        font-size: 20px;
+      }
+      .messages {
+        padding: 12px;
+        overflow: auto;
+      }
+      .msg {
+        padding: 9px 11px;
+        border-radius: 8px;
+        margin: 7px 0;
+        max-width: 88%;
+        font-size: 11px;
+      }
+      .msg.bot {
+        background: #eef3f8;
+      }
+      .msg.user {
+        background: #1d2938;
+        color: #fff;
+        margin-left: auto;
+      }
+      .proposal {
+        border: 1px solid #a8c2fa;
+        background: #f5f8ff;
+        padding: 9px;
+        border-radius: 6px;
+        margin: 8px 0;
+      }
+      .proposal button {
+        border: 0;
+        background: var(--blue);
+        color: #fff;
+        padding: 6px 9px;
+        border-radius: 4px;
+        margin-top: 6px;
+      }
+      .quick {
+        padding: 0 10px 8px;
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+      }
+      .quick button {
+        border: 1px solid var(--line);
+        background: #fff;
+        border-radius: 12px;
+        padding: 5px 8px;
+        font-size: 9px;
+      }
+      .chat-form {
+        display: flex;
+        border-top: 1px solid var(--line);
+        padding: 10px;
+      }
+      .chat-form input {
+        flex: 1;
+        border: 0;
+        outline: 0;
+      }
+      .chat-form button {
+        border: 0;
+        background: var(--blue);
+        color: #fff;
+        width: 34px;
+        height: 34px;
+        border-radius: 5px;
+      }
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 20px;
+        transform: translate(-50%, 70px);
+        background: #162334;
+        color: #fff;
+        padding: 10px 14px;
+        border-radius: 6px;
+        z-index: 60;
+        transition: 0.2s;
+      }
+      .toast.show {
+        transform: translate(-50%, 0);
+      }
+      .loading:after {
+        content: "";
+        position: fixed;
+        inset: 58px 0 0;
+        background: #ffffff88;
+        z-index: 50;
+        backdrop-filter: blur(1px);
+      }
+      .loading:before {
+        content: "Calculating configuration…";
+        position: fixed;
+        z-index: 51;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        background: #fff;
+        padding: 14px 18px;
+        border-radius: 7px;
+        box-shadow: 0 8px 35px #0002;
+        font-weight: 700;
+      }
+      @media (max-width: 1050px) {
+        body {
+          overflow: auto;
+        }
+        .app {
+          height: auto;
+        }
+        .workspace {
+          grid-template-columns: 320px 1fr;
+        }
+        .right {
+          grid-column: 1/-1;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 18px;
+        }
+        .center {
+          min-height: 700px;
+        }
+        .col {
+          overflow: visible;
+        }
+        .chart {
+          height: 260px;
+        }
+      }
+      @media (max-width: 760px) {
+        .workspace {
+          display: block;
+        }
+        .topbar .poc,
+        .top-actions .secondary {
+          display: none;
+        }
+        .left,
+        .right {
+          display: block;
+        }
+        .center {
+          min-height: 640px;
+        }
+        .center-foot {
+          grid-template-columns: repeat(2, 1fr);
+          height: auto;
+        }
+        .mini-kpi {
+          border: 0;
+        }
+        .chat {
+          width: calc(100% - 20px);
+          right: 10px;
+        }
+        .field-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      :root {
+        --ink: #282828;
+        --muted: #6f7379;
+        --blue: #990000;
+        --blue2: #740000;
+        --line: #dbdbdb;
+        --paper: #f1f1f1;
+        --panel: #fff;
+        --red: #bf1128;
+      }
+      .brand {
+        color: #990000;
+        font-weight: 900;
+        letter-spacing: 0.015em;
+      }
+      .brand-logo {
+        width: 92px;
+        height: 30px;
+        object-fit: contain;
+        object-position: left center;
+      }
+      .toast.error {
+        background: #a92b2b;
+      }
+      .btn.primary,
+      .chat-launch,
+      .chat-form button,
+      .proposal button {
+        background: #990000;
+        border-color: #990000;
+      }
+      .btn.primary:hover {
+        background: #740000;
+      }
+      .scenario.active,
+      .module-row.selected,
+      .alt.active {
+        background: #fff8f8;
+        box-shadow: 0 0 0 2px #99000014;
+      }
+      .seg button.active,
+      .position button.active {
+        background: #f6eaea;
+        color: #7b0000;
+      }
+      .center {
+        background: #ececec;
+      }
+      .msg.user {
+        background: #454d5a;
+      }
+      .proposal {
+        border-color: #d4a5a5;
+        background: #fff8f8;
+      }
+      .chat-launch {
+        box-shadow: 0 8px 30px #99000044;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <img
+            class="brand-logo"
+            src="https://www.gudel.com/build/images/logo.svg"
+            alt="Güdel"
+          />
+          GANTRY LAB
+        </div>
+        <div class="poc">MODULAR GANTRY CONFIGURATOR · POC 0.1</div>
+        <div class="top-actions">
+          <button class="btn secondary" id="importBtn">Import</button
+          ><button class="btn secondary" id="exportBtn">Export JSON</button
+          ><input type="file" id="importFile" accept=".json" hidden /><button
+            class="btn primary"
+            id="optimizeBtn"
+          >
+            Optimize configuration
+          </button>
+        </div>
+      </header>
+      <main class="workspace">
+        <aside class="col left">
+          <div class="section-title">Application scenario</div>
+          <div id="scenarios" class="scenario-grid"></div>
+          <div class="block">
+            <div class="section-title">Requirements</div>
+            <div class="field-grid" id="fields"></div>
+          </div>
+          <div class="block">
+            <div class="section-title">Optimization objective</div>
+            <div class="seg" id="strategy">
+              <button data-v="minimum_cost" class="active">Min cost</button
+              ><button data-v="balanced">Balanced</button
+              ><button data-v="high_performance">Performance</button>
+            </div>
+          </div>
+          <div class="block">
+            <div class="section-title">Manual module overrides</div>
+            <div id="modules" class="module-list"></div>
+            <div class="notice">
+              Manual selections stay fixed until you explicitly optimize again.
+              All technical values are synthetic demonstration data.
+            </div>
+          </div>
+        </aside>
+        <section class="center">
+          <div class="viewer-head">
+            <div>
+              <h1 id="configTitle">XYZ Gantry Configuration</h1>
+              <p id="configMeta">Calculating…</p>
+            </div>
+            <div class="view-toggle" id="viewMode">
+              <button data-v="module" class="active">Module size</button
+              ><button data-v="utilization">Utilization</button
+              ><button data-v="deflection">Deflection</button>
+            </div>
+          </div>
+          <div class="stage" id="stage">
+            <div class="stage-overlay">
+              <div class="selected-card" id="selectedCard"></div>
+              <div class="legend">
+                <b id="legendTitle">Building groups</b>
+                <div class="legend-scale" id="legendScale">
+                  <span><i style="background: #b9d5ff"></i>BG1</span
+                  ><span><i style="background: #73a7ef"></i>BG2</span
+                  ><span><i style="background: #2463b8"></i>BG3</span
+                  ><span><i style="background: #103f7a"></i>BG4</span>
+                </div>
+              </div>
+              <div class="position">
+                <button data-p="home">Home</button
+                ><button data-p="mid" class="active">Mid travel</button
+                ><button data-p="extended">Z extended</button>
+              </div>
+            </div>
+          </div>
+          <div class="center-foot">
+            <div class="mini-kpi">
+              <span>Indicative price</span><b id="costKpi">—</b
+              ><small>CHF excl. VAT</small>
+            </div>
+            <div class="mini-kpi">
+              <span>TCP deflection</span><b id="deflKpi">—</b
+              ><small id="deflAllowed">—</small>
+            </div>
+            <div class="mini-kpi">
+              <span>Peak utilization</span><b id="utilKpi">—</b
+              ><small id="utilCritical">—</small>
+            </div>
+            <div class="mini-kpi">
+              <span>Natural frequency</span><b id="freqKpi">—</b
+              ><small>first relevant mode</small>
+            </div>
+            <div class="mini-kpi">
+              <span>Configuration</span><b id="statusKpi">—</b
+              ><small id="statusSub">—</small>
+            </div>
+          </div>
+        </section>
+        <aside class="col right">
+          <div class="section-title">Engineering insights</div>
+          <div class="kpi-grid">
+            <div class="kpi">
+              <span>Total moving mass X</span><b id="massKpi">—</b>
+            </div>
+            <div class="kpi">
+              <span>Critical load case</span><b id="caseKpi">—</b>
+            </div>
+            <div class="kpi status-box">
+              <div><span>Technical status</span><b id="statusText">—</b></div>
+              <i id="statusPill" class="status-pill">—</i>
+            </div>
+          </div>
+          <div id="violations"></div>
+          <div class="tabs" id="tabs">
+            <button data-v="util" class="active">Utilization</button
+            ><button data-v="defl">Deflection</button
+            ><button data-v="cost">Cost</button>
+          </div>
+          <div id="chart" class="chart"></div>
+          <div id="componentDetail" class="component-detail"></div>
+          <div class="block">
+            <div class="section-title">Strategy comparison</div>
+            <div id="alternatives" class="alternatives">
+              <div class="alt">
+                Run optimization<br /><span>to compare alternatives</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+    <button class="chat-launch" id="chatLaunch">
+      Ask engineering assistant
+    </button>
+    <section class="chat" id="chat">
+      <div class="chat-head">
+        <div>
+          <b>Configuration assistant</b
+          ><span id="chatMode">Engine-grounded advice</span>
+        </div>
+        <button id="chatClose">×</button>
+      </div>
+      <div>
+        <div class="messages" id="messages">
+          <div class="msg bot">
+            I can update requirements, explain module choices, compare
+            deflection contributors, and explore cost trade-offs. Any proposed
+            requirement change needs your confirmation.
+          </div>
+        </div>
+        <div class="quick">
+          <button>Why this Y beam?</button><button>Explain deflection</button
+          ><button>Can we reduce cost?</button
+          ><button>Double the payload</button>
+        </div>
+      </div>
+      <form class="chat-form" id="chatForm">
+        <input
+          id="chatInput"
+          placeholder="Describe a requirement or ask why…"
+          autocomplete="off"
+        /><button>→</button>
+      </form>
+    </section>
+    <div class="toast" id="toast"></div>
+    <script>
+      const GROUPS = [
+        "columns",
+        "x_beams",
+        "y_beam",
+        "z_axis",
+        "x_carriages",
+        "y_carriage",
+        "z_carriage",
+        "x_guides",
+        "y_guides",
+        "z_guides",
+        "x_drives",
+        "y_drive",
+        "z_drive",
+      ];
+      const LABELS = {
+        columns: "Columns",
+        x_beams: "X beams",
+        y_beam: "Y beam",
+        z_axis: "Z axis",
+        x_carriages: "X carriage plates",
+        y_carriage: "Y carriage plate",
+        z_carriage: "Z carriage plate",
+        x_guides: "X guide system",
+        y_guides: "Y guide system",
+        z_guides: "Z guide system",
+        x_drives: "X drive system",
+        y_drive: "Y drive system",
+        z_drive: "Z drive system",
+      };
+      const FIELD_META = {
+        x_hub: ["X bridge travel", "m", 1, 30, 1],
+        y_hub: ["Y carriage travel", "m", 1, 15, 1],
+        z_hub: ["Z travel", "m", 1, 4, 1],
+        support_pairs: ["Support leg pairs", "pairs", 2, 8, 1],
+        payload: ["Payload", "kg", 20, 3000, 1],
+        tool_mass: ["Tool mass", "kg", 1, 120, 1],
+        max_speed: ["Max. speed", "m/s", 0.1, 5, 0.1],
+        max_acceleration: ["Max. acceleration", "m/s²", 0.1, 12, 0.1],
+        force_x: ["Process force X", "N", 0, 5000, 10],
+        force_y: ["Process force Y", "N", 0, 5000, 10],
+        force_z: ["Process force Z", "N", 0, 5000, 10],
+        max_deflection: ["Allowed TCP defl.", "mm", 0.03, 2, 0.01],
+        target_life: ["Target life", "h", 1000, 80000, 1000],
+      };
+      let state = {
+        requirements: {},
+        sizes: Object.fromEntries(GROUPS.map((g) => [g, 2])),
+        strategy: "minimum_cost",
+        result: null,
+        alternatives: [],
+        selected: "y_beam",
+        view: "module",
+        tab: "util",
+        scenarios: [],
+        position: "mid",
+        history: [],
+        autoSupports: true,
+      };
+      const $ = (id) => document.getElementById(id),
+        api = async (path, body) => {
+          const r = await fetch(
+            path,
+            body
+              ? {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(body),
+                }
+              : {},
+          );
+          if (!r.ok) throw Error((await r.json()).detail || "API error");
+          return r.json();
+        };
+      const toast = (t, error = false) => {
+        $("toast").textContent = t;
+        $("toast").classList.toggle("error", error);
+        $("toast").classList.add("show");
+        setTimeout(() => $("toast").classList.remove("show"), 3200);
+      };
+      function defaultSupportPairs(x) {
+        return Math.min(8, Math.ceil(x / 6) + 1);
+      }
+      function buildFields() {
+        $("fields").innerHTML = Object.entries(FIELD_META)
+          .map(
+            ([k, m]) =>
+              `<div class="field"><label>${m[0]}${k === "support_pairs" ? '<small title="Default: no more than 6 m between supports"> ≤6 m default</small>' : ""}</label><div class="control"><input data-field="${k}" type="number" min="${m[2]}" max="${m[3]}" step="${m[4]}"><span class="unit">${m[1]}</span></div></div>`,
+          )
+          .join("");
+        document.querySelectorAll("[data-field]").forEach(
+          (el) =>
+            (el.onchange = () => {
+              let k = el.dataset.field,
+                m = FIELD_META[k],
+                entered = +el.value,
+                applied = Math.min(m[3], Math.max(m[2], entered));
+              if (m[4] === 1) applied = Math.round(applied);
+              state.requirements[k] = applied;
+              if (applied !== entered)
+                toast(
+                  `${m[0]} adjusted to ${applied} ${m[1]} (allowed ${m[2]}–${m[3]}).`,
+                  true,
+                );
+              if (k === "support_pairs") state.autoSupports = false;
+              if (k === "x_hub" && state.autoSupports)
+                state.requirements.support_pairs = defaultSupportPairs(applied);
+              syncFields();
+              calculateNow();
+            }),
+        );
+      }
+      function syncFields() {
+        document
+          .querySelectorAll("[data-field]")
+          .forEach(
+            (el) => (el.value = state.requirements[el.dataset.field] ?? ""),
+          );
+      }
+      function buildModules() {
+        $("modules").innerHTML = GROUPS.map(
+          (g) =>
+            `<div class="module-row" data-row="${g}"><span>${LABELS[g]}</span><select data-module="${g}">${[1, 2, 3, 4].map((n) => `<option value="${n}">BG${n}</option>`).join("")}</select></div>`,
+        ).join("");
+        document.querySelectorAll("[data-module]").forEach((el) => {
+          el.value = state.sizes[el.dataset.module];
+          el.onchange = () => {
+            state.sizes[el.dataset.module] = +el.value;
+            state.selected = el.dataset.module;
+            calculateNow();
+          };
+        });
+      }
+      function renderScenarios() {
+        $("scenarios").innerHTML = state.scenarios
+          .map(
+            (s, i) =>
+              `<button class="scenario ${i === 0 ? "active" : ""}" data-scenario="${i}"><b>${s.name}</b><span>${s.description}</span></button>`,
+          )
+          .join("");
+        document
+          .querySelectorAll("[data-scenario]")
+          .forEach(
+            (b) => (b.onclick = () => loadScenario(+b.dataset.scenario)),
+          );
+      }
+      async function loadScenario(i) {
+        document
+          .querySelectorAll("[data-scenario]")
+          .forEach((b, j) => b.classList.toggle("active", i === j));
+        state.requirements = { ...state.scenarios[i].requirements };
+        state.autoSupports = true;
+        state.requirements.support_pairs = defaultSupportPairs(
+          state.requirements.x_hub,
+        );
+        state.sizes = Object.fromEntries(GROUPS.map((g) => [g, 2]));
+        syncFields();
+        buildModules();
+        await optimizeNow();
+        toast(state.scenarios[i].name + " loaded");
+      }
+      async function calculateNow() {
+        setLoading(true);
+        try {
+          state.result = await api("/api/calculate", {
+            requirements: state.requirements,
+            sizes: state.sizes,
+          });
+          state.requirements = { ...state.result.requirements };
+          renderAll();
+          notifyAdjustments(state.result);
+        } catch (e) {
+          toast(e.message, true);
+        } finally {
+          setLoading(false);
+        }
+      }
+      async function optimizeNow() {
+        setLoading(true);
+        try {
+          state.result = await api("/api/optimize", {
+            requirements: state.requirements,
+            strategy: state.strategy,
+          });
+          state.sizes = { ...state.result.sizes };
+          buildModules();
+          const c = await api("/api/compare", {
+            requirements: state.requirements,
+            sizes: state.sizes,
+          });
+          state.alternatives = c.alternatives;
+          renderAll();
+          toast("Heuristic optimization complete");
+        } catch (e) {
+          toast(e.message);
+        } finally {
+          setLoading(false);
+        }
+      }
+      function setLoading(v) {
+        document.body.classList.toggle("loading", v);
+      }
+      function notifyAdjustments(r) {
+        if (r.adjustments?.length) {
+          let a = r.adjustments[0],
+            m = FIELD_META[a.field];
+          toast(
+            `${m?.[0] || a.field} adjusted to ${a.applied} ${m?.[1] || ""}: ${a.reason}.`,
+            true,
+          );
+        }
+      }
+      function colorFor(comp) {
+        if (state.view === "module")
+          return ["#b9d5ff", "#73a7ef", "#2463b8", "#103f7a"][comp.size - 1];
+        if (state.view === "utilization") {
+          let u = comp.utilization;
+          return u > 100
+            ? "#d64242"
+            : u > 80
+              ? "#eb751b"
+              : u > 60
+                ? "#d5a11e"
+                : "#24a574";
+        }
+        let max = Math.max(...state.result.modules.map((x) => x.deflection));
+        let t = comp.deflection / max;
+        return new THREE.Color().setHSL(0.59, 0.75, 0.76 - t * 0.42).getStyle();
+      }
+      function renderAll() {
+        if (!state.result) return;
+        let r = state.result,
+          m = r.metrics;
+        syncFields();
+        document
+          .querySelectorAll("[data-module]")
+          .forEach((el) => (el.value = state.sizes[el.dataset.module]));
+        document
+          .querySelectorAll("[data-row]")
+          .forEach((el) =>
+            el.classList.toggle("selected", el.dataset.row === state.selected),
+          );
+        $("configMeta").textContent =
+          `${r.configuration_id} · ${r.optimization ? "heuristic " + r.optimization.strategy.replaceAll("_", " ") : "manual configuration"} · synthetic data`;
+        $("costKpi").textContent = "CHF " + m.total_cost.toLocaleString("en-CH");
+        $("deflKpi").textContent = m.tcp_deflection.toFixed(3) + " mm";
+        $("deflAllowed").textContent =
+          `allowed ${m.allowed_deflection.toFixed(3)} mm`;
+        $("utilKpi").textContent = m.max_utilization.toFixed(0) + "%";
+        let worst = [...r.modules].sort(
+          (a, b) => b.utilization - a.utilization,
+        )[0];
+        $("utilCritical").textContent = worst.label;
+        $("freqKpi").textContent = m.natural_frequency.toFixed(1) + " Hz";
+        $("statusKpi").textContent = m.status.toUpperCase();
+        $("statusKpi").className =
+          m.status === "valid" ? "status-valid" : "status-invalid";
+        $("statusSub").textContent = r.configuration_id;
+        $("massKpi").textContent = m.moving_masses.x.toFixed(0) + " kg";
+        $("caseKpi").textContent =
+          m.critical_load_case[0].toUpperCase() + m.critical_load_case.slice(1);
+        $("statusText").textContent =
+          m.status === "valid"
+            ? "All constraints satisfied"
+            : "Constraints violated";
+        $("statusPill").textContent = m.status.toUpperCase();
+        $("statusPill").className = "status-pill " + m.status;
+        $("violations").innerHTML =
+          (r.violations.length
+            ? `<div class="violations"><b>Needs attention</b><br>${r.violations.slice(0, 3).join("<br>")}</div>`
+            : "") +
+          `<div class="notice"><b>${m.support_pairs} support pairs · ${m.support_spacing.toFixed(1)} m spacing</b><br>Layout flexibility ${m.layout_flexibility}% — fewer supports keep the cell more open; more supports reduce X-beam deflection.</div>`;
+        renderSelected();
+        renderChart();
+        renderAlternatives();
+        update3D();
+        updateLegend();
+      }
+      function renderSelected() {
+        let c =
+          state.result.modules.find((x) => x.id === state.selected) ||
+          state.result.modules[0];
+        $("selectedCard").innerHTML =
+          `<b>${c.label} · BG${c.size}</b><div>${c.utilization.toFixed(0)}% utilization · ${c.deflection.toFixed(3)} mm TCP contribution</div>`;
+        $("componentDetail").innerHTML =
+          `<div class="detail-head"><b>${c.label}</b><span>${c.module_id}</span></div><div class="detail-grid"><div><span>Governing criterion</span><b>${c.critical_criterion.replaceAll("_", " ")}</b></div><div><span>Technical reserve</span><b>${(100 - c.utilization).toFixed(0)}%</b></div><div><span>Price contribution</span><b>CHF ${c.cost.toLocaleString("en-CH")}</b></div><div><span>TCP contribution</span><b>${c.deflection.toFixed(3)} mm</b></div></div>`;
+      }
+      let chart = echarts.init($("chart"));
+      function renderChart() {
+        let r = state.result;
+        if (!r) return;
+        chart.clear();
+        if (state.tab === "util") {
+          let data = [...r.modules].sort(
+            (a, b) => b.utilization - a.utilization,
+          );
+          chart.setOption({
+            grid: { left: 105, right: 18, top: 12, bottom: 20 },
+            xAxis: {
+              type: "value",
+              max: (v) => Math.max(110, Math.ceil(v.max / 20) * 20),
+              axisLabel: { fontSize: 9 },
+            },
+            yAxis: {
+              type: "category",
+              inverse: true,
+              data: data.map((x) => x.label),
+              axisLabel: { fontSize: 9 },
+            },
+            series: [
+              {
+                type: "bar",
+                data: data.map((x) => ({
+                  value: +x.utilization.toFixed(1),
+                  itemStyle: {
+                    color:
+                      x.utilization > 100
+                        ? "#d64242"
+                        : x.utilization > 80
+                          ? "#eb751b"
+                          : x.utilization > 60
+                            ? "#d5a11e"
+                            : "#24a574",
+                  },
+                })),
+                barWidth: 9,
+                label: {
+                  show: true,
+                  position: "right",
+                  formatter: "{c}%",
+                  fontSize: 8,
+                },
+              },
+            ],
+            tooltip: { trigger: "axis" },
+          });
+        } else {
+          let data = r.modules;
+          if (state.tab === "defl")
+            chart.setOption({
+              tooltip: { trigger: "item" },
+              series: [
+                {
+                  type: "pie",
+                  radius: ["42%", "72%"],
+                  data: data.map((x) => ({
+                    name: x.label,
+                    value: x.deflection,
+                  })),
+                  label: { fontSize: 8, formatter: "{b}\n{d}%" },
+                },
+              ],
+            });
+          else
+            chart.setOption({
+              tooltip: { trigger: "item" },
+              series: [
+                {
+                  type: "pie",
+                  radius: ["42%", "72%"],
+                  data: data.map((x) => ({ name: x.label, value: x.cost })),
+                  label: { fontSize: 8, formatter: "{b}\n{d}%" },
+                },
+              ],
+            });
+        }
+      }
+      function renderAlternatives() {
+        $("alternatives").innerHTML = state.alternatives.length
+          ? state.alternatives
+              .map(
+                (a, i) =>
+                  `<button class="alt ${a.optimization.strategy === state.strategy ? "active" : ""}" data-alt="${i}"><b>${a.optimization.strategy.replaceAll("_", " ")}</b><span>CHF ${a.metrics.total_cost.toLocaleString("en-CH")} · ${a.metrics.tcp_deflection.toFixed(3)} mm</span><span>${a.metrics.max_utilization.toFixed(0)}% peak · ${a.metrics.total_mass.toFixed(0)} kg</span></button>`,
+              )
+              .join("")
+          : `<div class="alt"><b>Optimize to compare</b></div>`;
+        document.querySelectorAll("[data-alt]").forEach(
+          (b) =>
+            (b.onclick = () => {
+              state.result = state.alternatives[+b.dataset.alt];
+              state.strategy = state.result.optimization.strategy;
+              state.sizes = { ...state.result.sizes };
+              buildModules();
+              renderAll();
+            }),
+        );
+      }
+      function updateLegend() {
+        let titles = {
+          module: "Building groups",
+          utilization: "Technical utilization",
+          deflection: "TCP contribution",
+        };
+        $("legendTitle").textContent = titles[state.view];
+        $("legendScale").innerHTML =
+          state.view === "module"
+            ? '<span><i style="background:#b9d5ff"></i>BG1</span><span><i style="background:#73a7ef"></i>BG2</span><span><i style="background:#2463b8"></i>BG3</span><span><i style="background:#103f7a"></i>BG4</span>'
+            : state.view === "utilization"
+              ? '<span><i style="background:#24a574"></i>0–60%</span><span><i style="background:#d5a11e"></i>60–80%</span><span><i style="background:#eb751b"></i>80–100%</span><span><i style="background:#d64242"></i>>100%</span>'
+              : '<span><i style="background:#9fc7ff"></i>Low</span><span><i style="background:#123f7d"></i>High</span>';
+      }
+      let scene,
+        camera,
+        renderer,
+        controls = { drag: false, x: 0, y: 0, rx: -0.34, ry: 0.62 },
+        objects = {};
+      function init3D() {
+        let el = $("stage");
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color("#edf1f5");
+        camera = new THREE.PerspectiveCamera(
+          38,
+          el.clientWidth / el.clientHeight,
+          0.1,
+          100,
+        );
+        camera.position.set(8, 6, 9);
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        renderer.setSize(el.clientWidth, el.clientHeight);
+        renderer.shadowMap.enabled = true;
+        el.prepend(renderer.domElement);
+        scene.add(new THREE.HemisphereLight(0xffffff, 0x647080, 1.25));
+        let dl = new THREE.DirectionalLight(0xffffff, 0.8);
+        dl.position.set(3, 8, 5);
+        dl.castShadow = true;
+        scene.add(dl);
+        let grid = new THREE.GridHelper(18, 18, 0xcbd5df, 0xdfe5eb);
+        scene.add(grid);
+        let axes = new THREE.AxesHelper(1.2);
+        axes.position.set(-4, 0, -3);
+        scene.add(axes);
+        renderer.domElement.onpointerdown = (e) => {
+          controls.drag = true;
+          controls.x = e.clientX;
+          controls.y = e.clientY;
+        };
+        renderer.domElement.onpointermove = (e) => {
+          if (!controls.drag) return;
+          controls.ry += (e.clientX - controls.x) * 0.006;
+          controls.rx = Math.max(
+            -1.1,
+            Math.min(0.2, controls.rx + (e.clientY - controls.y) * 0.006),
+          );
+          controls.x = e.clientX;
+          controls.y = e.clientY;
+        };
+        window.onpointerup = () => (controls.drag = false);
+        renderer.domElement.onwheel = (e) => {
+          camera.position.multiplyScalar(e.deltaY > 0 ? 1.08 : 0.92);
+        };
+        renderer.domElement.onclick = pick;
+        window.addEventListener("resize", resize3D);
+        animate();
+      }
+      function box(name, size, pos, group) {
+        let geo = new THREE.BoxGeometry(...size),
+          mat = new THREE.MeshStandardMaterial({
+            color: 0x4679df,
+            roughness: 0.55,
+            metalness: 0.18,
+          });
+        let mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(...pos);
+        mesh.castShadow = mesh.receiveShadow = true;
+        mesh.userData.group = group;
+        scene.add(mesh);
+        (objects[group] ??= []).push(mesh);
+        return mesh;
+      }
+      function update3D() {
+        if (!state.result) return;
+        Object.values(objects)
+          .flat()
+          .forEach((o) => scene.remove(o));
+        objects = {};
+        let r = state.requirements,
+          s = state.sizes,
+          x = Math.min(10, 3 + r.x_hub * 0.48),
+          z = Math.min(4, 1.8 + r.z_hub * 0.9),
+          y = Math.min(4.5, 2 + r.y_hub * 0.65),
+          sec = (g) => 0.1 + state.sizes[g] * 0.045;
+        let xp =
+            state.position === "home"
+              ? -x * 0.34
+              : state.position === "mid"
+                ? 0
+                : x * 0.34,
+          yp =
+            state.position === "home"
+              ? -y * 0.3
+              : state.position === "mid"
+                ? 0
+                : y * 0.3,
+          zd = state.position === "extended" ? -0.65 : 0;
+        for (let i = 0; i < r.support_pairs; i++) {
+          let xx = -x / 2 + (i * x) / (r.support_pairs - 1);
+          for (let yy of [-y / 2, y / 2])
+            box(
+              "column",
+              [sec("columns"), z, sec("columns")],
+              [xx, z / 2, yy],
+              "columns",
+            );
+        }
+        for (let yy of [-y / 2, y / 2])
+          box(
+            "xbeam",
+            [x + 0.35, sec("x_beams"), sec("x_beams")],
+            [0, z, yy],
+            "x_beams",
+          );
+        box(
+          "ybeam",
+          [sec("y_beam"), sec("y_beam"), y + 0.35],
+          [xp, z + 0.12, 0],
+          "y_beam",
+        );
+        box(
+          "z",
+          [sec("z_axis"), z * 0.68, sec("z_axis")],
+          [xp, z * 0.78 + zd, yp],
+          "z_axis",
+        );
+        for (let yy of [-y / 2, y / 2]) {
+          box("xguide", [x + 0.1, 0.035, 0.07], [0, z + 0.11, yy], "x_guides");
+          box(
+            "xdrive",
+            [x + 0.08, 0.07, 0.07],
+            [0, z - 0.11, yy + 0.12],
+            "x_drives",
+          );
+          box("xcar", [0.35, 0.13, 0.36], [xp, z + 0.12, yy], "x_carriages");
+        }
+        box(
+          "yguide",
+          [0.06, 0.06, y + 0.08],
+          [xp - 0.12, z + 0.22, 0],
+          "y_guides",
+        );
+        box("ydrive", [0.07, 0.07, y], [xp + 0.13, z + 0.22, 0], "y_drive");
+        box("ycar", [0.38, 0.17, 0.38], [xp, z + 0.2, yp], "y_carriage");
+        box(
+          "zguide",
+          [0.05, z * 0.6, 0.05],
+          [xp - 0.12, z * 0.78 + zd, yp],
+          "z_guides",
+        );
+        box(
+          "zdrive",
+          [0.06, z * 0.58, 0.06],
+          [xp + 0.12, z * 0.78 + zd, yp],
+          "z_drive",
+        );
+        box("zcar", [0.34, 0.28, 0.22], [xp, z * 0.82 + zd, yp], "z_carriage");
+        let tcp = box(
+          "tcp",
+          [0.12, 0.12, 0.12],
+          [xp, z * 0.41 + zd, yp],
+          "z_axis",
+        );
+        tcp.material = new THREE.MeshStandardMaterial({
+          color: 0xe83c3c,
+          emissive: 0x681010,
+        });
+        updateColors();
+      }
+      function updateColors() {
+        if (!state.result) return;
+        state.result.modules.forEach((c) =>
+          (objects[c.id] || []).forEach((o) => {
+            o.material.color.set(colorFor(c));
+            o.material.emissive.set(
+              c.id === state.selected ? 0x182b56 : 0x000000,
+            );
+          }),
+        );
+      }
+      function pick(e) {
+        let rect = renderer.domElement.getBoundingClientRect(),
+          mouse = new THREE.Vector2(
+            ((e.clientX - rect.left) / rect.width) * 2 - 1,
+            (-(e.clientY - rect.top) / rect.height) * 2 + 1,
+          ),
+          ray = new THREE.Raycaster();
+        ray.setFromCamera(mouse, camera);
+        let hit = ray.intersectObjects(Object.values(objects).flat())[0];
+        if (hit) {
+          state.selected = hit.object.userData.group;
+          renderAll();
+        }
+      }
+      function animate() {
+        requestAnimationFrame(animate);
+        let radius = camera.position.length();
+        camera.position.x =
+          radius * Math.cos(controls.rx) * Math.sin(controls.ry);
+        camera.position.y = radius * Math.sin(-controls.rx);
+        camera.position.z =
+          radius * Math.cos(controls.rx) * Math.cos(controls.ry);
+        camera.lookAt(0, 1.4, 0);
+        renderer.render(scene, camera);
+      }
+      function resize3D() {
+        let el = $("stage");
+        if (!renderer) return;
+        camera.aspect = el.clientWidth / el.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(el.clientWidth, el.clientHeight);
+        chart.resize();
+      }
+      document.querySelectorAll("#strategy button").forEach(
+        (b) =>
+          (b.onclick = () => {
+            state.strategy = b.dataset.v;
+            document
+              .querySelectorAll("#strategy button")
+              .forEach((x) => x.classList.toggle("active", x === b));
+          }),
+      );
+      $("optimizeBtn").onclick = optimizeNow;
+      document.querySelectorAll("#viewMode button").forEach(
+        (b) =>
+          (b.onclick = () => {
+            state.view = b.dataset.v;
+            document
+              .querySelectorAll("#viewMode button")
+              .forEach((x) => x.classList.toggle("active", x === b));
+            updateColors();
+            updateLegend();
+          }),
+      );
+      document.querySelectorAll("#tabs button").forEach(
+        (b) =>
+          (b.onclick = () => {
+            state.tab = b.dataset.v;
+            document
+              .querySelectorAll("#tabs button")
+              .forEach((x) => x.classList.toggle("active", x === b));
+            renderChart();
+          }),
+      );
+      document.querySelectorAll(".position button").forEach(
+        (b) =>
+          (b.onclick = () => {
+            state.position = b.dataset.p;
+            document
+              .querySelectorAll(".position button")
+              .forEach((x) => x.classList.toggle("active", x === b));
+            update3D();
+          }),
+      );
+      $("exportBtn").onclick = () => {
+        let blob = new Blob(
+            [
+              JSON.stringify(
+                {
+                  requirements: state.requirements,
+                  sizes: state.sizes,
+                  strategy: state.strategy,
+                  result: state.result,
+                },
+                null,
+                2,
+              ),
+            ],
+            { type: "application/json" },
+          ),
+          a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download =
+          (state.result?.configuration_id || "gantry-config") + ".json";
+        a.click();
+      };
+      $("importBtn").onclick = () => $("importFile").click();
+      $("importFile").onchange = async (e) => {
+        try {
+          let d = JSON.parse(await e.target.files[0].text());
+          state.requirements = d.requirements;
+          state.sizes = d.sizes;
+          state.strategy = d.strategy || "minimum_cost";
+          syncFields();
+          buildModules();
+          await calculateNow();
+          toast("Configuration imported");
+        } catch {
+          toast("Invalid configuration file");
+        }
+      };
+      $("chatLaunch").onclick = () => {
+        $("chat").classList.add("open");
+        $("chatLaunch").style.display = "none";
+      };
+      $("chatClose").onclick = () => {
+        $("chat").classList.remove("open");
+        $("chatLaunch").style.display = "";
+      };
+      function addMsg(text, type, reqProposal = {}, sizeProposal = {}) {
+        let d = document.createElement("div");
+        d.className = "msg " + type;
+        d.textContent = text;
+        $("messages").appendChild(d);
+        if (
+          Object.keys(reqProposal).length ||
+          Object.keys(sizeProposal).length
+        ) {
+          let p = document.createElement("div");
+          p.className = "proposal";
+          let reqLines = Object.entries(reqProposal).map(
+              ([k, v]) =>
+                `${FIELD_META[k]?.[0] || k}: ${v} ${FIELD_META[k]?.[1] || ""}`,
+            ),
+            sizeLines = Object.entries(sizeProposal).map(
+              ([k, v]) => `${LABELS[k] || k}: BG${v}`,
+            );
+          p.innerHTML =
+            "<b>Proposed configuration changes</b><br>" +
+            [...reqLines, ...sizeLines].join("<br>") +
+            "<br><button>Confirm and apply</button>";
+          p.querySelector("button").onclick = async () => {
+            Object.assign(state.requirements, reqProposal);
+            Object.assign(state.sizes, sizeProposal);
+            syncFields();
+            buildModules();
+            p.remove();
+            await calculateNow();
+            addMsg("Applied and recalculated.", "bot");
+          };
+          $("messages").appendChild(p);
+        }
+        $("messages").scrollTop = $("messages").scrollHeight;
+      }
+      async function sendChat(q) {
+        if (!q.trim()) return;
+        addMsg(q, "user");
+        state.history.push({ role: "user", content: q });
+        $("chatInput").disabled = true;
+        try {
+          let d = await api("/api/chat", {
+            message: q,
+            requirements: state.requirements,
+            sizes: state.sizes,
+            result: state.result,
+            history: state.history.slice(-8),
+          });
+          addMsg(d.message, "bot", d.proposed_changes, d.proposed_size_changes);
+          state.history.push({ role: "assistant", content: d.message });
+          $("chatMode").textContent =
+            d.mode === "openai"
+              ? "OpenAI · engine grounded"
+              : "Deterministic fallback · engine grounded";
+        } catch (e) {
+          addMsg(
+            "The assistant is unavailable, but the configurator remains fully functional.",
+            "bot",
+          );
+        } finally {
+          $("chatInput").disabled = false;
+          $("chatInput").focus();
+        }
+      }
+      $("chatForm").onsubmit = (e) => {
+        e.preventDefault();
+        let q = $("chatInput").value;
+        $("chatInput").value = "";
+        sendChat(q);
+      };
+      document
+        .querySelectorAll(".quick button")
+        .forEach((b) => (b.onclick = () => sendChat(b.textContent)));
+      async function init() {
+        buildFields();
+        buildModules();
+        init3D();
+        try {
+          state.scenarios = await api("/api/scenarios");
+          renderScenarios();
+          await loadScenario(0);
+        } catch (e) {
+          toast("Could not connect to the calculation engine");
+        }
+      }
+      init();
+    </script>
+  </body>
+</html>

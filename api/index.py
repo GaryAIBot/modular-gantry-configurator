@@ -58,14 +58,14 @@ def local_assistant(body):
     if size_changes:
         projected=calculate(body.requirements,{**body.sizes,**size_changes}); d=projected["metrics"]
         named=", ".join(f"{LABELS.get(k,k)} to BG{v}" for k,v in size_changes.items())
-        return {"message":f"Proposed: {named}. Result: {d['tcp_deflection']:.3f} mm deflection, {d['max_utilization']:.0f}% peak utilization, and {d['total_cost']:.0f} cost units.","proposed_changes":{},"proposed_size_changes":size_changes,"requires_confirmation":True,"result":projected}
+        return {"message":f"Proposed: {named}. Result: {d['tcp_deflection']:.3f} mm deflection, {d['max_utilization']:.0f}% peak utilization, and CHF {d['total_cost']:,.0f}.","proposed_changes":{},"proposed_size_changes":size_changes,"requires_confirmation":True,"result":projected}
     if "why" in msg:
         worst=max(current["modules"],key=lambda c:c["deflection"])
         explanation=f"{worst['label']} is the largest TCP compliance contributor at {worst['deflection']:.3f} mm. Its BG{worst['size']} selection balances the {worst['utilization']:.0f}% governing {worst['critical_criterion'].replace('_',' ')} utilization against cost and added moving mass."
     elif "cost" in msg:
         alt=optimize(body.requirements,"minimum_cost"); saving=current["metrics"]["total_cost"]-alt["metrics"]["total_cost"]
         size_changes={g:v for g,v in alt["sizes"].items() if body.sizes.get(g)!=v}
-        explanation=f"The minimum-cost configuration saves {max(0,saving):.0f} cost units, with {alt['metrics']['max_utilization']:.0f}% peak utilization and {alt['metrics']['tcp_deflection']:.3f} mm deflection. Confirm to apply it." if size_changes else "This configuration already matches the minimum-cost module selection."
+        explanation=f"The minimum-price configuration saves CHF {max(0,saving):,.0f}, with {alt['metrics']['max_utilization']:.0f}% peak utilization and {alt['metrics']['tcp_deflection']:.3f} mm deflection. Confirm to apply it." if size_changes else "This configuration already matches the minimum-price module selection."
     elif "deflection" in msg or "stiff" in msg:
         top=sorted(current["modules"],key=lambda c:c["deflection"],reverse=True)[:3]
         explanation="The leading TCP deflection contributors are "+", ".join(f"{c['label']} ({c['deflection']:.3f} mm)" for c in top)+f". Total deflection is {current['metrics']['tcp_deflection']:.3f} mm against {current['metrics']['allowed_deflection']:.3f} mm allowed."
